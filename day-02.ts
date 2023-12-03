@@ -19,14 +19,9 @@ function parse(input: string): Game[] {
   return input.split("\n").filter((line) => !!line).flatMap((line) => {
     const [idHolder, countsRaw] = line.split(":");
     const id = Number(idHolder.replace("Game ", ""));
-    // TODO: flatten sets for now
-    // const counts = countsRaw.replaceAll(";", ",").split(",");
     const sets = countsRaw.split(";");
-    // console.log(sets);
     return sets.map((s) => {
-      // console.log(s);
       const counts = s.split(",");
-      // console.log(counts);
       const game: Game = {
         id,
         red: 0,
@@ -51,7 +46,7 @@ function parse(input: string): Game[] {
 function pt1(input: string): number {
   const games = parse(input);
   const invalidGamesIds = new Set<number>();
-  const validGames = games.forEach((g) => {
+  games.forEach((g) => {
     const isValid = g.blue <= maxColors.blue && g.red <= maxColors.red &&
       g.green <= maxColors.green;
     if (!isValid) {
@@ -61,7 +56,6 @@ function pt1(input: string): number {
   const validGameIds = [...new Set(games.map((g) => g.id))].filter((id) =>
     !invalidGamesIds.has(id)
   );
-  // console.log(validGameIds);
   return validGameIds.reduce((acc, cur) => acc + cur, 0);
 }
 
