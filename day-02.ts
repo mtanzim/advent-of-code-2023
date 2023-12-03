@@ -64,19 +64,18 @@ function pt2(input: string): number {
   const grouped = Object.groupBy(games, ({ id }) => id);
   const maxes: Game[] = Object.entries(grouped).map(
     ([id, g]) => {
-      const red = g.map((g) => g.red).reduce(
-        (acc, cur) => cur > acc ? cur : acc,
-        0,
-      );
-      const green = g.map((g) => g.green).reduce(
-        (acc, cur) => cur > acc ? cur : acc,
-        0,
-      );
-      const blue = g.map((g) => g.blue).reduce(
-        (acc, cur) => cur > acc ? cur : acc,
-        0,
-      );
-      return { id: Number(id), red, green, blue };
+      const findMaxColor = (color: Colors) =>
+        g.map((g) => g[color]).reduce(
+          (acc, cur) => cur > acc ? cur : acc,
+          0,
+        );
+
+      return {
+        id: Number(id),
+        red: findMaxColor("red"),
+        green: findMaxColor("green"),
+        blue: findMaxColor("blue"),
+      };
     },
   );
   const powers = maxes.map((m) => m.blue * m.green * m.red);
