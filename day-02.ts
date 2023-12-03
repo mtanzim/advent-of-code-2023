@@ -59,7 +59,33 @@ function pt1(input: string): number {
   return validGameIds.reduce((acc, cur) => acc + cur, 0);
 }
 
+function pt2(input: string): number {
+  const games: Game[] = parse(input);
+  const grouped = Object.groupBy(games, ({ id }) => id);
+  const maxes: Game[] = Object.entries(grouped).map(
+    ([id, g]) => {
+      const red = g.map((g) => g.red).reduce(
+        (acc, cur) => cur > acc ? cur : acc,
+        0,
+      );
+      const green = g.map((g) => g.green).reduce(
+        (acc, cur) => cur > acc ? cur : acc,
+        0,
+      );
+      const blue = g.map((g) => g.blue).reduce(
+        (acc, cur) => cur > acc ? cur : acc,
+        0,
+      );
+      return { id: Number(id), red, green, blue };
+    },
+  );
+  const powers = maxes.map((m) => m.blue * m.green * m.red);
+  return powers.reduce((acc, cur) => acc + cur, 0);
+}
+
 console.log(pt1(exampleInput));
+console.log(pt2(exampleInput));
 
 const testInput = Deno.readTextFileSync("inputs/day-02.txt");
 console.log(pt1(testInput));
+console.log(pt2(testInput));
