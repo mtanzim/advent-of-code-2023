@@ -36,15 +36,12 @@ function pt1(races: Race[]): number {
   return races.map(({ time, distance }) => {
     let held = 0;
     while (held < time) {
-      const speed = held;
-      const timeLeft = time - held;
-      const distanceCovered = speed * timeLeft;
-      if (distanceCovered > distance) {
-        break;
+      if (held * (time - held) > distance) {
+        return time - 2 * held;
       }
       held++;
     }
-    return (time - held) - held;
+    throw Error("should not be here");
   }).reduce((acc, cur) => acc * cur, 1);
 }
 
