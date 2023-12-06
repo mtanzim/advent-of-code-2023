@@ -48,5 +48,14 @@ function pt1(races: Race[]): number {
   }).reduce((acc, cur) => acc * cur, 1);
 }
 
+function pt2(races: Race[]): number {
+  const time = Number(races.map((r) => r.time).map(String).join(""));
+  const distance = Number(races.map((r) => r.distance).map(String).join(""));
+  // console.log({ time, distance });
+  return pt1([{time, distance}])
+}
+
 console.log(pt1(parse(exampleInput)));
 console.log(pt1(parse(day6Input)));
+console.log(pt2(parse(exampleInput)));
+console.log(pt2(parse(day6Input)));
