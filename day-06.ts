@@ -33,26 +33,25 @@ function parse(input: string): Race[] {
 }
 
 function pt1(races: Race[]): number {
-  return races.map((r) => {
-    const { time, distance } = r;
-    const wins: number[] = [];
-    for (let held = 0; held < time; held++) {
+  return races.map(({ time, distance }) => {
+    let held = 0;
+    while (held < time) {
       const speed = held;
       const timeLeft = time - held;
       const distanceCovered = speed * timeLeft;
       if (distanceCovered > distance) {
-        wins.push(speed);
+        break;
       }
+      held++;
     }
-    return wins.length;
+    return (time - held) - held;
   }).reduce((acc, cur) => acc * cur, 1);
 }
 
 function pt2(races: Race[]): number {
   const time = Number(races.map((r) => r.time).map(String).join(""));
   const distance = Number(races.map((r) => r.distance).map(String).join(""));
-  // console.log({ time, distance });
-  return pt1([{time, distance}])
+  return pt1([{ time, distance }]);
 }
 
 console.log(pt1(parse(exampleInput)));
