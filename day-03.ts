@@ -24,7 +24,9 @@ const isNum = (c: string) => {
 };
 
 const isSym = (c: string) => {
-  return !isNum(c) && c !== ".";
+  const symbolPattern = /[^0-9.]/;
+
+  return c.match(symbolPattern);
 };
 
 // function checkNeighbors(grid: Grid, { rowIdx, colIdx }: Coord) {
@@ -50,6 +52,7 @@ function checkNs(
   rowIdx: number,
   colStart: number,
   colEnd: number,
+  num: number,
 ) {
   const ns: Coord[] = [{ rowIdx, colIdx: colStart - 1 }, {
     rowIdx,
@@ -64,56 +67,36 @@ function checkNs(
   const validNs = ns.filter((n) => {
     return grid?.[n.rowIdx]?.[n.colIdx] !== undefined;
   });
-  return validNs.map((n) => isSym(grid[n.rowIdx][n.colIdx])).some(Boolean);
+  const willAdd = validNs.map((n) => isSym(grid[n.rowIdx][n.colIdx])).some(
+    Boolean,
+  );
+  return willAdd;
 }
 
 function pt1(grid: Grid) {
-  const numbers: number[] = [];
-  let startNum: number | null = null;
+  let res = 0
 
   grid.forEach((row, rowIdx) => {
-    row.forEach((col, colIdx) => {
-      // neutral state
-      if (isNum(col) && startNum === null) {
-        startNum = colIdx;
-        return;
+    const numberPattern = /\d+/g;
+    let match;
+    while ((match = numberPattern.exec(row.join(""))) !== null) {
+      const start = match.index;
+      const end = match.index + match[0].length - 1;
+      const val = Number(match[0]);
+      const willAdd = checkNs(
+        grid,
+        rowIdx,
+        start,
+        end,
+        val,
+      );
+      if (willAdd) {
+        res += val
       }
-      // check that line isn't ending
-      // number ended, reset
-      if (!isNum(col) && startNum !== null) {
-        const curNum = Number(row.slice(startNum, colIdx).join(""));
-        let willAdd = false;
-        for (let i = startNum; i < colIdx; i++) {
-          willAdd = willAdd ||
-            checkNs(grid, rowIdx, startNum, colIdx - 1);
-        }
-        if (willAdd) {
-          numbers.push(curNum);
-        }
-        startNum = null;
-        return;
-      }
-
-      // line will overflow
-      if (colIdx === row.length - 1 && startNum !== null) {
-        const curNum = Number(row.slice(startNum, colIdx + 1).join(""));
-        let willAdd = false;
-        for (let i = startNum; i < colIdx + 1; i++) {
-          willAdd = willAdd ||
-            checkNs(grid, rowIdx, startNum, colIdx + 1);
-        }
-        console.log("edge");
-        console.log({ curNum, willAdd });
-
-        if (willAdd) {
-          numbers.push(curNum);
-        }
-        startNum = null;
-        return;
-      }
-    });
+    }
   });
-  return numbers.reduce((acc, cur) => acc + cur, 0);
+
+  return res
 }
 console.log(pt1(parse(exampleInput)));
 console.log(pt1(parse(Deno.readTextFileSync("inputs/day-03.txt"))));
