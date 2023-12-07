@@ -27,21 +27,44 @@ const isSym = (c: string) => {
   return !isNum(c) && c !== ".";
 };
 
-function checkNeighbors(grid: Grid, { rowIdx, colIdx }: Coord) {
-  const neighbors: Coord[] = [
-    { rowIdx: rowIdx - 1, colIdx },
-    { rowIdx: rowIdx + 1, colIdx },
-    { rowIdx, colIdx: colIdx - 1 },
-    { rowIdx, colIdx: colIdx + 1 },
-    { rowIdx: rowIdx + 1, colIdx: colIdx + 1 },
-    { rowIdx: rowIdx + 1, colIdx: colIdx - 1 },
-    { rowIdx: rowIdx - 1, colIdx: colIdx + 1 },
-    { rowIdx: rowIdx - 1, colIdx: colIdx - 1 },
-  ].filter((n) => {
+// function checkNeighbors(grid: Grid, { rowIdx, colIdx }: Coord) {
+//   const neighbors: Coord[] = [
+//     { rowIdx: rowIdx - 1, colIdx },
+//     { rowIdx: rowIdx + 1, colIdx },
+//     { rowIdx, colIdx: colIdx - 1 },
+//     { rowIdx, colIdx: colIdx + 1 },
+//     { rowIdx: rowIdx + 1, colIdx: colIdx + 1 },
+//     { rowIdx: rowIdx + 1, colIdx: colIdx - 1 },
+//     { rowIdx: rowIdx - 1, colIdx: colIdx + 1 },
+//     { rowIdx: rowIdx - 1, colIdx: colIdx - 1 },
+//   ].filter((n) => {
+//     return grid?.[n.rowIdx]?.[n.colIdx] !== undefined;
+//   });
+
+//   return neighbors.map((n) => isSym(grid[n.rowIdx][n.colIdx])).some(Boolean);
+// }
+
+// this probably works
+function checkNs(
+  grid: Grid,
+  rowIdx: number,
+  colStart: number,
+  colEnd: number,
+) {
+  const ns: Coord[] = [{ rowIdx, colIdx: colStart - 1 }, {
+    rowIdx,
+    colIdx: colEnd + 1,
+  }];
+
+  for (let i = colStart - 1; i <= colEnd + 1; i++) {
+    ns.push({ rowIdx: rowIdx - 1, colIdx: i });
+    ns.push({ rowIdx: rowIdx + 1, colIdx: i });
+  }
+
+  const validNs = ns.filter((n) => {
     return grid?.[n.rowIdx]?.[n.colIdx] !== undefined;
   });
-
-  return neighbors.map((n) => isSym(grid[n.rowIdx][n.colIdx])).some(Boolean);
+  return validNs.map((n) => isSym(grid[n.rowIdx][n.colIdx])).some(Boolean);
 }
 
 function pt1(grid: Grid) {
@@ -53,19 +76,40 @@ function pt1(grid: Grid) {
       // neutral state
       if (isNum(col) && startNum === null) {
         startNum = colIdx;
+        return;
       }
+      // check that line isn't ending
       // number ended, reset
       if (!isNum(col) && startNum !== null) {
         const curNum = Number(row.slice(startNum, colIdx).join(""));
         let willAdd = false;
-        // console.log({curNum})
         for (let i = startNum; i < colIdx; i++) {
-          willAdd = willAdd || checkNeighbors(grid, { rowIdx, colIdx: i });
+          willAdd = willAdd ||
+            checkNs(grid, rowIdx, startNum, colIdx - 1);
         }
         if (willAdd) {
           numbers.push(curNum);
         }
         startNum = null;
+        return;
+      }
+
+      // line will overflow
+      if (colIdx === row.length - 1 && startNum !== null) {
+        const curNum = Number(row.slice(startNum, colIdx + 1).join(""));
+        let willAdd = false;
+        for (let i = startNum; i < colIdx + 1; i++) {
+          willAdd = willAdd ||
+            checkNs(grid, rowIdx, startNum, colIdx + 1);
+        }
+        console.log("edge");
+        console.log({ curNum, willAdd });
+
+        if (willAdd) {
+          numbers.push(curNum);
+        }
+        startNum = null;
+        return;
       }
     });
   });
