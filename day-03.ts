@@ -18,35 +18,12 @@ function parse(input: string): string[][] {
   return lines.map((l) => l.split(""));
 }
 
-const isNum = (c: string) => {
-  const digitPattern = /\d/g;
-  return c.match(digitPattern);
-};
-
 const isSym = (c: string) => {
   const symbolPattern = /[^0-9.]/;
 
   return c.match(symbolPattern);
 };
 
-// function checkNeighbors(grid: Grid, { rowIdx, colIdx }: Coord) {
-//   const neighbors: Coord[] = [
-//     { rowIdx: rowIdx - 1, colIdx },
-//     { rowIdx: rowIdx + 1, colIdx },
-//     { rowIdx, colIdx: colIdx - 1 },
-//     { rowIdx, colIdx: colIdx + 1 },
-//     { rowIdx: rowIdx + 1, colIdx: colIdx + 1 },
-//     { rowIdx: rowIdx + 1, colIdx: colIdx - 1 },
-//     { rowIdx: rowIdx - 1, colIdx: colIdx + 1 },
-//     { rowIdx: rowIdx - 1, colIdx: colIdx - 1 },
-//   ].filter((n) => {
-//     return grid?.[n.rowIdx]?.[n.colIdx] !== undefined;
-//   });
-
-//   return neighbors.map((n) => isSym(grid[n.rowIdx][n.colIdx])).some(Boolean);
-// }
-
-// this probably works
 function checkNs(
   grid: Grid,
   rowIdx: number,
@@ -67,15 +44,11 @@ function checkNs(
   const validNs = ns.filter((n) => {
     return grid?.[n.rowIdx]?.[n.colIdx] !== undefined;
   });
-  const willAdd = validNs.map((n) => isSym(grid[n.rowIdx][n.colIdx])).some(
-    Boolean,
-  );
-  return willAdd;
+  return validNs.some((n) => isSym(grid[n.rowIdx][n.colIdx]));
 }
 
 function pt1(grid: Grid) {
-  let res = 0
-
+  let res = 0;
   grid.forEach((row, rowIdx) => {
     const numberPattern = /\d+/g;
     let match;
@@ -91,12 +64,12 @@ function pt1(grid: Grid) {
         val,
       );
       if (willAdd) {
-        res += val
+        res += val;
       }
     }
   });
 
-  return res
+  return res;
 }
 console.log(pt1(parse(exampleInput)));
 console.log(pt1(parse(Deno.readTextFileSync("inputs/day-03.txt"))));
