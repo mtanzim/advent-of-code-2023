@@ -136,16 +136,8 @@ function determineHandTypeWithJoker(hand: string): HandTypes {
   if (origHand === "Five of a kind") {
     return origHand;
   }
-  // there has to be only one joker
-  if (
-    origHand === "Four of a kind" && origSorted[1][0] === "J" &&
-    origSorted[1][1] === 1
-  ) {
-    return "Five of a kind";
-  }
 
   // other cases, extract until jokers are empty
-
   const jokers = origSorted.find((v) => v[0] === "J");
   if (!jokers) {
     throw Error("cannot find joker, invalid");
