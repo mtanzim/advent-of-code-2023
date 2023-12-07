@@ -124,7 +124,6 @@ function determineHandType(hand: string): [HandTypes, SortedCardsForHand] {
     return ["High card", sorted];
   }
 
-  console.log({ sorted, hand });
   throw Error("unhandled hand type, please fix");
 }
 
@@ -153,32 +152,15 @@ function determineHandTypeWithJoker(hand: string): HandTypes {
   }
   const rest = origSorted.filter((v) => v[0] !== "J");
   const bestOfRest = rest.slice(0, 1)[0];
-  const resttOfRest = rest.slice(1);
-  const updatedHand = [
+  const restOfRest = rest.slice(1);
+  const updatedHand = ([
     ["J", jokers[1] - 1],
     [bestOfRest[0], bestOfRest[1] + 1],
-    ...resttOfRest,
-  ].map((v) => {
+    ...restOfRest,
+  ] as SortedCardsForHand).map((v) => {
     const [card, count] = v;
     return card.repeat(count);
   }).join("");
-
-  // if (origHand === "Three of a kind" || ) {
-  // const updatedHand = origSorted.map((v, idx) => {
-  //   const [card, count] = v;
-  //   // add one to the best card
-  //   if (idx === 0) {
-  //     return [card, count + 1] as [CardStr, Occurrences];
-  //   }
-  //   // replace the joker
-  //   if (card === "J") {
-  //     return [card, count - 1] as [CardStr, Occurrences];
-  //   }
-  //   return [card, count] as [CardStr, Occurrences];
-  // }).map((v) => {
-  //   const [card, count] = v;
-  //   return card.repeat(count);
-  // }).join("");
 
   if (updatedHand.length !== 5) {
     console.log({ hand, updatedHand, origSorted });
@@ -186,9 +168,6 @@ function determineHandTypeWithJoker(hand: string): HandTypes {
   }
 
   return determineHandTypeWithJoker(updatedHand);
-  // }
-
-  throw Error("unhandled case in determineHandTypeWithJoker");
 }
 
 type Game = {
@@ -229,7 +208,6 @@ function pt1(games: Game[]): number {
       throw Error("failed to determine hand rank");
     }
 
-    // console.log({ca, cb, haRank, hbRank})
     if (haRank === hbRank) {
       // tie breaker
       for (let i = 0; i < ca.length; i++) {
@@ -251,7 +229,6 @@ function pt1(games: Game[]): number {
     rank: idx + 1,
   }));
 
-  console.log(rankedGame);
   return rankedGame.reduce((acc, cur) => acc + cur.rank * cur.bid, 0);
 }
 
@@ -264,18 +241,15 @@ function pt2(games: Game[]): number {
     const haRank = handRanks[handA];
     const hbRank = handRanks[handB];
 
-    // assertions, TS can only help so much
     if (ca.length !== cb.length) {
       throw Error("bad cards");
     }
     if (haRank === undefined || hbRank === undefined) {
-      console.log({ ca, cb, handA, handB, haRank, hbRank });
       throw Error("failed to determine hand rank");
     }
 
-    // console.log({ca, cb, haRank, hbRank})
+    // tie breaker
     if (haRank === hbRank) {
-      // tie breaker
       for (let i = 0; i < ca.length; i++) {
         const cca = ca[i];
         const ccb = cb[i];
@@ -295,7 +269,6 @@ function pt2(games: Game[]): number {
     rank: idx + 1,
   }));
 
-  console.log(rankedGame);
   return rankedGame.reduce((acc, cur) => acc + cur.rank * cur.bid, 0);
 }
 
@@ -307,40 +280,7 @@ KTJJT 220
 QQQJA 483
 `;
 
-// console.log(pt1(parse(exampleInput)));
-// console.log(pt2(parse(exampleInput)));
-// console.log(pt1(parse(Deno.readTextFileSync("inputs/day-07.txt"))));
+console.log(pt1(parse(exampleInput)));
+console.log(pt2(parse(exampleInput)));
+console.log(pt1(parse(Deno.readTextFileSync("inputs/day-07.txt"))));
 console.log(pt2(parse(Deno.readTextFileSync("inputs/day-07.txt"))));
-
-// (function checkHandTypes() {
-//   const tests = [
-//     determineHandType("AAAAA") === "Five of a kind",
-//     determineHandType("AA8AA") === "Four of a kind",
-//     determineHandType("23332") === "Full house",
-//     determineHandType("TTT98") === "Three of a kind",
-//     determineHandType("23432") === "Two pair",
-//     determineHandType("A23A4") === "One pair",
-//     determineHandType("23456") === "High card",
-//   ].every(Boolean);
-//   console.log(tests ? "Pass" : "Fail");
-// })();
-
-// console.log(determineHandType("AAAAA"));
-// console.log(determineHandType("AA8AA"));
-// console.log(determineHandType("23332"));
-// console.log(determineHandType("TTT98"));
-// console.log(determineHandType("23432"));
-// console.log(determineHandType("A23A4"));
-// console.log(determineHandType("23456"));
-
-console.log(determineHandTypeWithJoker("32T3K"));
-console.log(determineHandTypeWithJoker("T55J5"));
-console.log(determineHandTypeWithJoker("KK677"));
-console.log(determineHandTypeWithJoker("KTJJT"));
-console.log(determineHandTypeWithJoker("QQQJA"));
-
-// console.log(determineHandTypeWithJoker("23332"));
-// console.log(determineHandTypeWithJoker("TTT98"));
-// console.log(determineHandTypeWithJoker("23432"));
-// console.log(determineHandTypeWithJoker("A23A4"));
-// console.log(determineHandTypeWithJoker("23456"));
