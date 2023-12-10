@@ -41,11 +41,8 @@ function extrapolatePt2(nums: number[]): number {
     nextRow = [];
   }
 
-  let beginning = diffRows.at(-1)?.at(0);
-  if (beginning === undefined) {
-    throw Error("cannot get first beginning");
-  }
-  for (let i = diffRows.length - 2; i >= 0; i--) {
+  let beginning = 0;
+  for (let i = diffRows.length - 1; i >= 0; i--) {
     beginning = diffRows[i][0] - beginning;
   }
 
