@@ -41,27 +41,15 @@ function extrapolatePt2(nums: number[]): number {
     nextRow = [];
   }
 
-  let bottomRow = diffRows.at(-1)?.slice();
-  if (!bottomRow) {
-    throw Error("cannot init bottom row");
+  let beginning = diffRows.at(-1)?.at(0);
+  if (beginning === undefined) {
+    throw Error("cannot get first beginning");
   }
-  const afterDiffRow = [bottomRow];
   for (let i = diffRows.length - 2; i >= 0; i--) {
-    const topRow = diffRows[i].slice();
-    const newVal: number = topRow[0] - bottomRow[0];
-    const newRow = [newVal, ...topRow];
-    afterDiffRow.unshift(newRow);
-    bottomRow = newRow.slice();
-    if (!bottomRow) {
-      throw Error("cannot iterate bottom row");
-    }
+    beginning = diffRows[i][0] - beginning;
   }
 
-  const res = afterDiffRow.at(0)?.at(0);
-  if (res === undefined) {
-    throw Error("cannot resolve");
-  }
-  return res;
+  return beginning;
 }
 
 function pt2(rows: number[][]) {
