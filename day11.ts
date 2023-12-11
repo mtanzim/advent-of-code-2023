@@ -1,5 +1,3 @@
-console.log("Hello");
-
 const exampleInput = `
 ...#......
 .......#..
@@ -26,7 +24,7 @@ function expand(input: string): string {
   });
 
   const columnsWithoutGalaxies = new Set<number>();
-  new Array(lines[0].length).fill(null).forEach((c, idx) => {
+  new Array(lines[0].length).fill(null).forEach((_, idx) => {
     if (columnsWithGalaxies.has(idx)) {
       return;
     }
@@ -49,7 +47,29 @@ function expand(input: string): string {
     }, [] as string[]).join("");
   }).join("\n");
 
-  return expandedBoth
+  return expandedBoth;
 }
 
-console.log(expand(exampleInput));
+function toGrid(input: string): string[][] {
+  return input.split("\n").map((l) => l.split(""));
+}
+
+function toString(grid: string[][]): string {
+  return grid.map((row) => row.join("")).join("\n");
+}
+
+function idGalaxies(grid: string[][]): string[][] {
+  const clone = grid.map((r) => r.slice());
+  let counter = 1;
+  grid.forEach((r, rIdx) => {
+    r.forEach((c, cIdx) => {
+      if (c === "#") {
+        clone[rIdx][cIdx] = String(counter);
+        counter++;
+      }
+    });
+  });
+  return clone;
+}
+
+console.log(toString(idGalaxies(toGrid(expand(exampleInput)))));
