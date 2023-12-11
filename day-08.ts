@@ -48,27 +48,6 @@ function pt1(game: Game): number {
   return counter;
 }
 
-function pt1WithArgs(game: Game, start: string, end: string): number {
-  const { dirs, steps } = game;
-  let i = 0;
-  let counter = 0;
-
-  let coord = start;
-  while (true) {
-    if (i === dirs.length) {
-      i = 0;
-    }
-    const curDir = dirs[i];
-    coord = steps[coord][curDir];
-    counter++;
-    if (coord === end) {
-      break;
-    }
-    i++;
-  }
-  return counter;
-}
-
 function pt2(game: Game): number {
   const { dirs, steps } = game;
   let i = 0;
@@ -84,6 +63,8 @@ function pt2(game: Game): number {
 
   let coords = starts;
 
+  const endings = new Map<number, Set<number>>();
+
   while (true) {
     if (i === dirs.length) {
       i = 0;
@@ -91,7 +72,20 @@ function pt2(game: Game): number {
     const curDir = dirs[i];
     coords = coords.map((c) => steps[c][curDir]);
     counter++;
-    // console.log({ coords });
+
+    coords.forEach((c, idx) => {
+      if (c.endsWith("Z")) {
+        // console.log(`idx ${idx} ends at iteration: ${i}, counter: ${counter}`);
+        if (endings.has(idx)) {
+          const prevMap = endings.get(idx);
+          prevMap?.add(counter);
+        } else {
+          endings.set(idx, new Set([counter]));
+        }
+      }
+    });
+
+    console.log(endings);
     const lastChars = coords.map((c) => c.at(-1)).join("");
 
     if (lastChars === expectedEnd) {
@@ -135,8 +129,8 @@ LR
 XXX = (XXX, XXX
 `;
 
-console.log(pt1(parse(exampleInput1)));
-console.log(pt1(parse(exampleInput2)));
+// console.log(pt1(parse(exampleInput1)));
+// console.log(pt1(parse(exampleInput2)));
 console.log(pt1(parse(Deno.readTextFileSync("inputs/day-08.txt"))));
 
 console.log(pt2(parse(exampleInput3)));
