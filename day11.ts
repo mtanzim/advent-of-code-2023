@@ -95,13 +95,13 @@ function coordGalaxyIds(grid: string[][]): Record<string, string> {
   return res;
 }
 
-function getPairs(galaxyCoords: Record<string, string>): [string, string][] {
+function getPairs(galaxyCoords: Record<string, string>): Set<[string, string]> {
   const pairs = [] as [string, string][];
   const ids = Object.keys(galaxyCoords);
   console.log({ ids });
   const tracker = new Set<string>();
-  for (const id1 in ids) {
-    for (const id2 in ids) {
+  for (const id1 of ids) {
+    for (const id2 of ids) {
       if (id1 === id2) {
         continue;
       }
@@ -115,17 +115,17 @@ function getPairs(galaxyCoords: Record<string, string>): [string, string][] {
       tracker.add(backward);
     }
   }
-  return pairs;
+  return new Set(pairs);
 }
 
 function pt1(grid: string[][]): number {
   const idedGrid = idGalaxies(grid);
   const galaxyCoords = coordGalaxyIds(idedGrid);
-  const pairs = getPairs(galaxyCoords);
+  const pairsSet = getPairs(galaxyCoords);
   console.log(galaxyCoords);
 
-  console.log(pairs);
-  console.log(pairs.length);
+  console.log(pairsSet);
+  console.log(pairsSet.size);
 }
 
 // const idedGrid = idGalaxies(toGrid(expand(exampleInput)));
