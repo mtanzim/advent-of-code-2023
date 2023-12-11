@@ -72,4 +72,34 @@ function idGalaxies(grid: string[][]): string[][] {
   return clone;
 }
 
-console.log(toString(idGalaxies(toGrid(expand(exampleInput)))));
+type Coord = { rowIdx: number; colIdx: number };
+type CoordKey = string;
+
+function toCoordKey({ rowIdx, colIdx }: Coord): CoordKey {
+  return `${rowIdx}-${colIdx}`;
+}
+
+function toCoord(key: CoordKey): Coord {
+  const [rowIdx, colIdx] = key.split("-").map(Number);
+  return { rowIdx, colIdx };
+}
+
+function coordGalaxyIds(grid: string[][]): Record<string, string> {
+  const res: Record<string, string> = {};
+  grid.forEach((r, rowIdx) => {
+    r.forEach((c, colIdx) => {
+      if (c !== ".") {
+        res[c] = toCoordKey({ rowIdx, colIdx });
+      }
+    });
+  });
+  return res;
+}
+
+function pt1(grid: string[][]): number {
+  const idedGrid = idGalaxies(grid);
+  console.log(coordGalaxyIds(idedGrid));
+}
+
+// const idedGrid = idGalaxies(toGrid(expand(exampleInput)));
+console.log(pt1(toGrid(expand(exampleInput))));
