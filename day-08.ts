@@ -14,10 +14,7 @@ ZZZ = (ZZZ, ZZZ)
 
 type Direction = "R" | "L";
 type Coord = string;
-type NextCoord = {
-  left: Direction;
-  right: Direction;
-};
+type NextCoord = Record<Direction, Coord>;
 type Game = {
   dirs: Direction[];
   steps: Record<Coord, NextCoord>;
@@ -31,9 +28,9 @@ function parse(input: string): Game {
       const [cur, nexRaw] = l.split("=").map((token) =>
         token.replaceAll(" ", "")
       );
-      const [left, right] = nexRaw.replace("(", "").replace(")", "").split(",");
+      const [L, R] = nexRaw.replace("(", "").replace(")", "").split(",");
 
-      return [cur, { left, right } as NextCoord];
+      return [cur, { L, R }];
     }),
   );
 
