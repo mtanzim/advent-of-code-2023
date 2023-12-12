@@ -118,14 +118,65 @@ function getPairs(galaxyCoords: Record<string, string>): Set<[string, string]> {
   return new Set(pairs);
 }
 
+function toSourceSinkStr(from: string, to: string) {
+  return `${from}>${to}`;
+}
+
+function bfs(
+  grid: string[][],
+  sourceId: string,
+  sourceCoordStr: string,
+) {
+  let count = 0;
+  const pathDistances: Record<string, number> = {};
+  const queue = [toCoord(sourceCoordStr)];
+  const marked = new Set([sourceCoordStr]);
+  while (queue.length !== 0) {
+    const curNode = queue.shift();
+    if (!curNode) {
+      throw Error("error in bfs queue pop");
+    }
+
+    const { rowIdx, colIdx } = curNode;
+    if (grid[rowIdx][colIdx] !== ".") {
+      const sink = grid[rowIdx][colIdx];
+      const keyFwd = toSourceSinkStr(sourceId, sink);
+      const keyBwd = toSourceSinkStr(sink, sourceId);
+      if (
+        !pathDistances[keyFwd] && !pathDistances[keyBwd] && sourceId != sink
+      ) {
+        pathDistances[keyFwd] = count;
+      }
+    }
+    count++;
+    const neighbors: Coord[] = [
+      { rowIdx, colIdx: colIdx + 1 },
+      { rowIdx, colIdx: colIdx - 1 },
+      { rowIdx: rowIdx + 1, colIdx },
+      { rowIdx: rowIdx - 1, colIdx },
+    ].filter((c) => grid?.[c.rowIdx]?.[c.colIdx] !== undefined)
+      .filter((c) => !marked.has(toCoordKey(c)));
+
+    for (const n of neighbors) {
+      marked.add(toCoordKey(n));
+      queue.push(n);
+    }
+  }
+  return pathDistances;
+}
+
 function pt1(grid: string[][]): number {
   const idedGrid = idGalaxies(grid);
   const galaxyCoords = coordGalaxyIds(idedGrid);
   const pairsSet = getPairs(galaxyCoords);
   console.log(galaxyCoords);
 
-  console.log(pairsSet);
-  console.log(pairsSet.size);
+  const testSourceId = "1";
+  const testCoord = galaxyCoords[testSourceId];
+  console.log(bfs(idedGrid, testSourceId, testCoord));
+
+  // console.log(pairsSet);
+  // console.log(pairsSet.size);
 }
 
 // const idedGrid = idGalaxies(toGrid(expand(exampleInput)));
