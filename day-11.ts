@@ -11,48 +11,9 @@ const exampleInput = `
 #...#.....
 `;
 
-function expand(input: string): string {
-  const lines = input.split("\n").filter(Boolean);
-
-  const columnsWithGalaxies = new Set<number>();
-  lines.forEach((l) => {
-    l.split("").forEach((c, idx) => {
-      if (c === "#") {
-        columnsWithGalaxies.add(idx);
-      }
-    });
-  });
-
-  const columnsWithoutGalaxies = new Set<number>();
-  new Array(lines[0].length).fill(null).forEach((_, idx) => {
-    if (columnsWithGalaxies.has(idx)) {
-      return;
-    }
-    columnsWithoutGalaxies.add(idx);
-  });
-
-  const expandedHorizontally = lines.reduce((acc, line) => {
-    if (line.includes("#")) {
-      return acc.concat(line);
-    }
-    return acc.concat([line, line]);
-  }, [] as string[]);
-
-  const expandedBoth = expandedHorizontally.map((l) => {
-    return l.split("").reduce((acc, c, idx) => {
-      if (columnsWithoutGalaxies.has(idx)) {
-        return acc.concat([c, c]);
-      }
-      return acc.concat(c);
-    }, [] as string[]).join("");
-  }).join("\n");
-
-  return expandedBoth;
-}
-
-function expandPt2(
+function determineEmpties(
   input: string,
-): { emptyCols: Set<number>; emptyRows: Set<number>; origInput: string } {
+): { emptyCols: Set<number>; emptyRows: Set<number> } {
   const lines = input.split("\n").filter(Boolean);
 
   const columnsWithGalaxies = new Set<number>();
@@ -82,7 +43,6 @@ function expandPt2(
   return {
     emptyRows,
     emptyCols,
-    origInput: input,
   };
 }
 
@@ -153,29 +113,9 @@ function getPairs(galaxyCoords: Record<string, string>): Set<[string, string]> {
   return new Set(pairs);
 }
 
-function pt1(grid: string[][]): number {
-  const idedGrid = idGalaxies(grid);
-  const galaxyCoords = coordGalaxyIds(idedGrid);
-  const pairsSet = getPairs(galaxyCoords);
-
-  let total = 0;
-  for (const p of pairsSet) {
-    const [a, b] = p;
-    const aCoord = toCoord(galaxyCoords[a]);
-    const bCoord = toCoord(galaxyCoords[b]);
-    const deltaX = Math.abs(aCoord.colIdx - bCoord.colIdx);
-    const deltaY = Math.abs(aCoord.rowIdx - bCoord.rowIdx);
-
-    total += deltaX + deltaY;
-  }
-
-  return total;
-}
-
-function pt2(input: string): number {
-  const { emptyRows, emptyCols, origInput } = expandPt2(input);
-  const emptinessFactor = 1000000;
-  const grid = toGrid(origInput);
+const solve = (emptinessFactor: number) => (input: string) => {
+  const grid = toGrid(input);
+  const { emptyRows, emptyCols } = determineEmpties(input);
   const idedGrid = idGalaxies(grid);
   const galaxyCoords = coordGalaxyIds(idedGrid);
   const pairsSet = getPairs(galaxyCoords);
@@ -210,9 +150,9 @@ function pt2(input: string): number {
   }
 
   return total;
-}
+};
 
-console.log(pt1(toGrid(expand(exampleInput))));
-console.log(pt1(toGrid(expand(Deno.readTextFileSync("inputs/day-11.txt")))));
-console.log(pt2(exampleInput));
-console.log(pt2(Deno.readTextFileSync("inputs/day-11.txt")));
+console.log(solve(2)(exampleInput));
+console.log(solve(10)(exampleInput));
+console.log(solve(2)(Deno.readTextFileSync("inputs/day-11.txt")));
+console.log(solve(1000000)(Deno.readTextFileSync("inputs/day-11.txt")));
