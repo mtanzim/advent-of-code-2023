@@ -50,6 +50,42 @@ function expand(input: string): string {
   return expandedBoth;
 }
 
+function expandPt2(
+  input: string,
+): { emptyCols: Set<number>; emptyRows: Set<number>; origInput: string } {
+  const lines = input.split("\n").filter(Boolean);
+
+  const columnsWithGalaxies = new Set<number>();
+  lines.forEach((l) => {
+    l.split("").forEach((c, idx) => {
+      if (c === "#") {
+        columnsWithGalaxies.add(idx);
+      }
+    });
+  });
+
+  const emptyCols = new Set<number>();
+  new Array(lines[0].length).fill(null).forEach((_, idx) => {
+    if (columnsWithGalaxies.has(idx)) {
+      return;
+    }
+    emptyCols.add(idx);
+  });
+
+  const emptyRows = new Set<number>();
+  lines.forEach((l, idx) => {
+    if (!l.includes("#")) {
+      emptyRows.add(idx);
+    }
+  });
+
+  return {
+    emptyRows,
+    emptyCols,
+    origInput: input,
+  };
+}
+
 function toGrid(input: string): string[][] {
   return input.split("\n").map((l) => l.split(""));
 }
@@ -98,7 +134,6 @@ function coordGalaxyIds(grid: string[][]): Record<string, string> {
 function getPairs(galaxyCoords: Record<string, string>): Set<[string, string]> {
   const pairs = [] as [string, string][];
   const ids = Object.keys(galaxyCoords);
-  console.log({ ids });
   const tracker = new Set<string>();
   for (const id1 of ids) {
     for (const id2 of ids) {
@@ -122,8 +157,6 @@ function pt1(grid: string[][]): number {
   const idedGrid = idGalaxies(grid);
   const galaxyCoords = coordGalaxyIds(idedGrid);
   const pairsSet = getPairs(galaxyCoords);
-  console.log(galaxyCoords);
-  console.log(pairsSet);
 
   let total = 0;
   for (const p of pairsSet) {
@@ -139,6 +172,47 @@ function pt1(grid: string[][]): number {
   return total;
 }
 
-// const idedGrid = idGalaxies(toGrid(expand(exampleInput)));
+function pt2(input: string): number {
+  const { emptyRows, emptyCols, origInput } = expandPt2(input);
+  const emptinessFactor = 1000000;
+  const grid = toGrid(origInput);
+  const idedGrid = idGalaxies(grid);
+  const galaxyCoords = coordGalaxyIds(idedGrid);
+  const pairsSet = getPairs(galaxyCoords);
+
+  let total = 0;
+  for (const p of pairsSet) {
+    const [a, b] = p;
+    const aCoord = toCoord(galaxyCoords[a]);
+    const bCoord = toCoord(galaxyCoords[b]);
+    const minCol = Math.min(aCoord.colIdx, bCoord.colIdx);
+    const maxCol = Math.max(aCoord.colIdx, bCoord.colIdx);
+    const minRow = Math.min(aCoord.rowIdx, bCoord.rowIdx);
+    const maxRow = Math.max(aCoord.rowIdx, bCoord.rowIdx);
+
+    let deltaCol = 0;
+    for (let i = minCol; i < maxCol; i++) {
+      if (emptyCols.has(i)) {
+        deltaCol += emptinessFactor - 1;
+      }
+      deltaCol++;
+    }
+
+    let deltaRow = 0;
+    for (let i = minRow; i < maxRow; i++) {
+      if (emptyRows.has(i)) {
+        deltaRow += emptinessFactor - 1;
+      }
+      deltaRow++;
+    }
+
+    total += deltaCol + deltaRow;
+  }
+
+  return total;
+}
+
 console.log(pt1(toGrid(expand(exampleInput))));
 console.log(pt1(toGrid(expand(Deno.readTextFileSync("inputs/day-11.txt")))));
+console.log(pt2(exampleInput));
+console.log(pt2(Deno.readTextFileSync("inputs/day-11.txt")));
