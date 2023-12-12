@@ -141,3 +141,4 @@ function pt1(grid: string[][]): number {
 
 // const idedGrid = idGalaxies(toGrid(expand(exampleInput)));
 console.log(pt1(toGrid(expand(exampleInput))));
+console.log(pt1(toGrid(expand(Deno.readTextFileSync("inputs/day-11.txt")))));
