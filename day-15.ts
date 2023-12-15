@@ -29,15 +29,12 @@ type StepInstr = {
   focalLen?: number;
 };
 function parseStep(s: Step): StepInstr {
-  if (s.length < 3 || s.length > 4) {
-    console.log(s);
-    throw Error("invalid input to parseStep");
-  }
-  const [lb1, lb2, op, optionalNum] = s;
-  const label = lb1 + lb2;
+  const [label, optionalNum] = s.split(/[-=]/);
+  const op = s.match(/[=-]/g)?.at(0) as Op;
+
   // console.log({ label, op, optionalNum });
   const focalLen = optionalNum !== undefined ? Number(optionalNum) : undefined;
-  return { label, op: op as Op, focalLen };
+  return { label, op: op, focalLen };
 }
 
 function parseAllSteps(s: string): StepInstr[] {
@@ -106,14 +103,14 @@ function traverseBoxes(steps: StepInstr[]) {
       return (boxIdx + 1) * (lensIdx + 1) * lensPower + accLens;
     }, 0);
 
-    console.log({ boxIdx, curScore });
+    // console.log({ boxIdx, curScore });
 
     return acc + curScore;
   }, 0);
 
-  console.log({
-    cleanedBoxes,
-  });
+  // console.log({
+  //   cleanedBoxes,
+  // });
 
   console.log({ focusingPower });
 }
@@ -122,6 +119,6 @@ function traverseBoxes(steps: StepInstr[]) {
 const exampleInput = `rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7`;
 // console.log(parseAllSteps(exampleInput));
 console.log(traverseBoxes(parseAllSteps(exampleInput)));
-// console.log(traverseBoxes(parseAllSteps(Deno.readTextFileSync("inputs/day-15.txt"))));
+console.log(traverseBoxes(parseAllSteps(Deno.readTextFileSync("inputs/day-15.txt"))));
 // console.log(hashMultiple(exampleInput));
 // console.log(hashMultiple(Deno.readTextFileSync("inputs/day-15.txt")));
