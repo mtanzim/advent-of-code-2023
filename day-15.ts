@@ -1,3 +1,19 @@
+(function main() {
+  // hashFn("HASH");
+  const exampleInput = `rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7`;
+  // pt1
+  console.log("day 15 - pt 1");
+  console.log(hashMultiple(exampleInput));
+  console.log(hashMultiple(Deno.readTextFileSync("inputs/day-15.txt")));
+
+  // pt2
+  console.log("day 15 - pt 2");
+  console.log(getFocusingPower(parseAllSteps(exampleInput)));
+  console.log(
+    getFocusingPower(parseAllSteps(Deno.readTextFileSync("inputs/day-15.txt"))),
+  );
+})();
+
 function hashFn(s: string): number {
   let val = 0;
   s.split("").forEach((c, idx) => {
@@ -39,7 +55,7 @@ function parseAllSteps(s: string): StepInstr[] {
   }, 0);
 }
 
-function traverseBoxes(steps: StepInstr[]) {
+function getFocusingPower(steps: StepInstr[]): number {
   // try with a list first, optimize after if needed
   const boxes: Array<Array<[string, number]> | null> = new Array(256).fill(
     null,
@@ -48,19 +64,12 @@ function traverseBoxes(steps: StepInstr[]) {
     const boxNum = hashFn(step.label);
     const curBox = boxes[boxNum];
     if (curBox === null && step.op === "=") {
-      if (!step.focalLen) {
-        throw Error(
-          "Something went wrong with parsing, see: " + JSON.stringify(step),
-        );
-      }
-      boxes[boxNum] = [[step.label, step.focalLen]];
+      boxes[boxNum] = [[step.label, step.focalLen!]];
     }
     if (curBox !== null && step.op === "-") {
-      if (step.op === "-") {
-        boxes[boxNum] = curBox.filter(([label, _]) => label !== step.label);
-        if (boxes[boxNum]?.length === 0) {
-          boxes[boxNum] = null;
-        }
+      boxes[boxNum] = curBox.filter(([label, _]) => label !== step.label);
+      if (boxes[boxNum]?.length === 0) {
+        boxes[boxNum] = null;
       }
     }
     if (curBox !== null && step.op === "=") {
@@ -87,17 +96,3 @@ function traverseBoxes(steps: StepInstr[]) {
 
   return focusingPower;
 }
-
-// hashFn("HASH");
-const exampleInput = `rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7`;
-// pt1
-console.log("day 15 - pt 1");
-console.log(hashMultiple(exampleInput));
-console.log(hashMultiple(Deno.readTextFileSync("inputs/day-15.txt")));
-
-// pt2
-console.log("day 15 - pt 2");
-console.log(traverseBoxes(parseAllSteps(exampleInput)));
-console.log(
-  traverseBoxes(parseAllSteps(Deno.readTextFileSync("inputs/day-15.txt"))),
-);
