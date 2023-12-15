@@ -21,7 +21,7 @@ function hashMultiple(s: string): number {
   }, 0);
 }
 
-type Step = [string, string, string, string] | [string, string, string];
+type Step = string;
 type Op = "=" | "-";
 type StepInstr = {
   label: string;
@@ -30,6 +30,7 @@ type StepInstr = {
 };
 function parseStep(s: Step): StepInstr {
   if (s.length < 3 || s.length > 4) {
+    console.log(s);
     throw Error("invalid input to parseStep");
   }
   const [lb1, lb2, op, optionalNum] = s;
@@ -87,14 +88,21 @@ function traverseBoxes(steps: StepInstr[]) {
         boxes[boxNum] = [[step.label, step.focalLen!]];
       }
     }
-
-    console.log({ boxes: boxes.filter((b) => b !== null), step });
   }
+
+  const cleanedBoxes = boxes.map((b, idx) => b === null ? undefined : { idx, b })
+    .filter(
+      Boolean,
+    );
+  console.log({
+    cleanedBoxes,
+  });
 }
 
 // hashFn("HASH");
 const exampleInput = `rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7`;
 // console.log(parseAllSteps(exampleInput));
 console.log(traverseBoxes(parseAllSteps(exampleInput)));
+// console.log(traverseBoxes(parseAllSteps(Deno.readTextFileSync("inputs/day-15.txt"))));
 // console.log(hashMultiple(exampleInput));
 // console.log(hashMultiple(Deno.readTextFileSync("inputs/day-15.txt")));
