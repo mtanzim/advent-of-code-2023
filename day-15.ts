@@ -34,7 +34,7 @@ function parseStep(s: Step): StepInstr {
   }
   const [lb1, lb2, op, optionalNum] = s;
   const label = lb1 + lb2;
-  console.log({ label, op, optionalNum });
+  // console.log({ label, op, optionalNum });
   const focalLen = optionalNum !== undefined ? Number(optionalNum) : undefined;
   return { label, op: op as Op, focalLen };
 }
@@ -53,33 +53,42 @@ function traverseBoxes(steps: StepInstr[]) {
   for (const step of steps) {
     const boxNum = hashFn(step.label);
     const curBox = boxes[boxNum];
+    if (curBox === null && step.op === "=") {
+      if (!step.focalLen) {
+        throw Error(
+          "Something went wrong with parsing, see: " + JSON.stringify(step),
+        );
+      }
+      boxes[boxNum] = [[step.label, step.focalLen]];
+    }
     if (curBox !== null) {
       if (step.op === "-") {
-        const curIdx = curBox.findIndex(([label, _]) => step.label === label);
-        if (curIdx === -1) {
-          continue;
-        }
-        for (let i = curIdx; curIdx < 256; i++) {
-          curBox[i] = curBox[i + 1];
+        boxes[boxNum] = curBox.filter(([label, _]) => label !== step.label);
+        if (boxes[boxNum]?.length === 0) {
+          boxes[boxNum] = null;
         }
       }
 
       if (step.op === "=") {
         const curIdx = curBox.findIndex(([label, _]) => step.label === label);
         if (curIdx === -1) {
-          const firstNullIdx = curBox.findIndex((lens) => lens === null);
-          curBox[firstNullIdx] = [step.label, step.focalLen!];
+          curBox.push([step.label, step.focalLen!]);
         } else {
           curBox[curIdx] = [step.label, step.focalLen!];
         }
       }
     } else {
       if (step.op === "=") {
+        if (!step.focalLen) {
+          throw Error(
+            "Something went wrong with parsing, see: " + JSON.stringify(step),
+          );
+        }
         boxes[boxNum] = [[step.label, step.focalLen!]];
       }
     }
 
-    console.log(boxes.filter((b) => b !== null));
+    console.log({ boxes: boxes.filter((b) => b !== null), step });
   }
 }
 
