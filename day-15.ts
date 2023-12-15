@@ -90,13 +90,32 @@ function traverseBoxes(steps: StepInstr[]) {
     }
   }
 
-  const cleanedBoxes = boxes.map((b, idx) => b === null ? undefined : { idx, b })
+  const cleanedBoxes = boxes.map((b, idx) =>
+    b === null ? undefined : { idx, b }
+  )
     .filter(
       Boolean,
     );
+
+  const focusingPower = boxes.reduce((acc, box, boxIdx) => {
+    if (!box) {
+      return acc;
+    }
+    const curScore = box.reduce((accLens, lens, lensIdx) => {
+      const [_, lensPower] = lens;
+      return (boxIdx + 1) * (lensIdx + 1) * lensPower + accLens;
+    }, 0);
+
+    console.log({ boxIdx, curScore });
+
+    return acc + curScore;
+  }, 0);
+
   console.log({
     cleanedBoxes,
   });
+
+  console.log({ focusingPower });
 }
 
 // hashFn("HASH");
