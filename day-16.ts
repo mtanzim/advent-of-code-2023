@@ -51,7 +51,7 @@ console.log(visualizedTracker);
       break;
     }
     curElem = grid[curCoord.rowIdx][curCoord.colIdx];
-    // console.log({ curElem, curDir, curCoord });
+    console.log({ curElem, curDir, curCoord });
     trackerGrid[curCoord.rowIdx][curCoord.colIdx] = true;
     switch (true) {
       case curElem === ".":
@@ -173,11 +173,11 @@ console.log(visualizedTracker);
           break loop;
         }
         if (curDir === "<") {
-          curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
+          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 };
           continue loop;
         }
         if (curDir === ">") {
-          curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
+          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 };
           continue loop;
         }
         throw Error("invalid direction encountered");
