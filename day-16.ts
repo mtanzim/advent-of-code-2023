@@ -75,32 +75,32 @@ console.log(visualizedTracker);
       case curElem === "/":
         if (curDir === "^") {
           curCoord = {
-            rowIdx: curCoord.rowIdx - 1,
-            colIdx: curCoord.colIdx,
+            rowIdx: curCoord.rowIdx,
+            colIdx: curCoord.colIdx + 1,
           };
           curDir = ">";
           continue loop;
         }
         if (curDir === "v") {
           curCoord = {
-            rowIdx: curCoord.rowIdx + 1,
-            colIdx: curCoord.colIdx,
+            rowIdx: curCoord.rowIdx,
+            colIdx: curCoord.colIdx - 1,
           };
           curDir = "<";
           continue loop;
         }
         if (curDir === "<") {
           curCoord = {
-            rowIdx: curCoord.rowIdx,
-            colIdx: curCoord.colIdx - 1,
+            rowIdx: curCoord.rowIdx + 1,
+            colIdx: curCoord.colIdx,
           };
           curDir = "v";
           continue loop;
         }
         if (curDir === ">") {
           curCoord = {
-            rowIdx: curCoord.rowIdx,
-            colIdx: curCoord.colIdx + 1,
+            rowIdx: curCoord.rowIdx - 1,
+            colIdx: curCoord.colIdx ,
           };
           curDir = "^";
           continue loop;
