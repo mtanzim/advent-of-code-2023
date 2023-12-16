@@ -35,13 +35,13 @@ function traverseBeam(
 ) {
   let curCoord = start;
   let curDir = startDir;
-  let curElem = grid[curCoord.rowIdx][curCoord.colIdx];
+  let curElem;
   while (true) {
+    // went out of bounds
     if (grid?.[curCoord.rowIdx]?.[curCoord.colIdx] === undefined) {
       break;
     }
     curElem = grid[curCoord.rowIdx][curCoord.colIdx];
-
     console.log({ curElem, curDir });
     trackerGrid[curCoord.rowIdx][curCoord.colIdx] = true;
     switch (true) {
@@ -134,7 +134,7 @@ function traverseBeam(
         }
         throw Error("invalid direction encountered");
       case curElem === "|":
-        if (curDir === "^" || curDir === "v") {
+        if (curDir === ">" || curDir === "<") {
           traverseBeam(
             { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx },
             grid,
@@ -149,12 +149,12 @@ function traverseBeam(
           );
           break;
         }
-        if (curDir === "<") {
-          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 };
+        if (curDir === "^") {
+          curCoord = { rowIdx: curCoord.rowIdx  - 1, colIdx: curCoord.colIdx };
           continue;
         }
-        if (curDir === ">") {
-          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 };
+        if (curDir === "v") {
+          curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
           continue;
         }
         throw Error("invalid direction encountered");
@@ -167,9 +167,13 @@ function traverseBeam(
 function pt1(input: string) {
   const grid = toGrid(input);
   const trackerGrid = grid.map((r) => r.map((_) => false));
-  console.log({ trackerGrid });
+  // console.log({ trackerGrid });
   traverseBeam({ rowIdx: 0, colIdx: 0 }, grid, ">", trackerGrid);
-  console.log(trackerGrid);
+  const visualizedTracker = trackerGrid.map((r) =>
+    r.map((v) => v ? "#" : ".").join("")
+  ).join("\n");
+  // console.log(trackerGrid);
+  // console.log(visualizedTracker);
 }
 
 pt1(exampleInput);
