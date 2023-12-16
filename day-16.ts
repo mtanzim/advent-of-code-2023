@@ -39,6 +39,10 @@ function traverseBeam(
 
   console.log("Starting at:");
   console.log({ start });
+  const visualizedTracker = trackerGrid.map((r) =>
+  r.map((v) => v ? "#" : ".").join("")
+).join("\n");
+console.log(visualizedTracker);
 
   loop:
   while (true) {
@@ -53,19 +57,19 @@ function traverseBeam(
       case curElem === ".":
         if (curDir === "^") {
           curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
-          continue;
+          continue loop;
         }
         if (curDir === "v") {
           curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
-          continue;
+          continue loop;
         }
         if (curDir === "<") {
           curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 };
-          continue;
+          continue loop;
         }
         if (curDir === ">") {
           curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 };
-          continue;
+          continue loop;
         }
         throw Error("invalid direction encountered");
       case curElem === "/":
@@ -75,7 +79,7 @@ function traverseBeam(
             colIdx: curCoord.colIdx + 1,
           };
           curDir = ">";
-          continue;
+          continue loop;
         }
         if (curDir === "v") {
           curCoord = {
@@ -83,7 +87,7 @@ function traverseBeam(
             colIdx: curCoord.colIdx - 1,
           };
           curDir = "<";
-          continue;
+          continue loop;
         }
         if (curDir === "<") {
           curCoord = {
@@ -91,7 +95,7 @@ function traverseBeam(
             colIdx: curCoord.colIdx - 1,
           };
           curDir = "v";
-          continue;
+          continue loop;
         }
         if (curDir === ">") {
           curCoord = {
@@ -99,7 +103,7 @@ function traverseBeam(
             colIdx: curCoord.colIdx + 1,
           };
           curDir = "^";
-          continue;
+          continue loop;
         }
         throw Error("invalid direction encountered");
       case curElem === "\\":
@@ -110,7 +114,7 @@ function traverseBeam(
           };
           curDir = "<";
 
-          continue;
+          continue loop;
         }
         if (curDir === "v") {
           curCoord = {
@@ -118,7 +122,7 @@ function traverseBeam(
             colIdx: curCoord.colIdx + 1,
           };
           curDir = ">";
-          continue;
+          continue loop;
         }
         if (curDir === "<") {
           curCoord = {
@@ -126,7 +130,7 @@ function traverseBeam(
             colIdx: curCoord.colIdx - 1,
           };
           curDir = "^";
-          continue;
+          continue loop;
         }
         if (curDir === ">") {
           curCoord = {
@@ -134,19 +138,19 @@ function traverseBeam(
             colIdx: curCoord.colIdx + 1,
           };
           curDir = "v";
-          continue;
+          continue loop;
         }
         throw Error("invalid direction encountered");
       case curElem === "-":
         if (curDir === "^") {
           traverseBeam(
-            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx - 1 },
+            { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 },
             grid,
             "<",
             trackerGrid,
           );
           traverseBeam(
-            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx + 1 },
+            { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 },
             grid,
             ">",
             trackerGrid,
@@ -155,13 +159,13 @@ function traverseBeam(
         }
         if (curDir === "v") {
           traverseBeam(
-            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx - 1 },
+            { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 },
             grid,
             "<",
             trackerGrid,
           );
           traverseBeam(
-            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx + 1 },
+            { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 },
             grid,
             ">",
             trackerGrid,
@@ -170,23 +174,23 @@ function traverseBeam(
         }
         if (curDir === "<") {
           curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
-          continue;
+          continue loop;
         }
         if (curDir === ">") {
           curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
-          continue;
+          continue loop;
         }
         throw Error("invalid direction encountered");
       case curElem === "|":
         if (curDir === ">") {
           traverseBeam(
-            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx + 1 },
+            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx },
             grid,
             "^",
             trackerGrid,
           );
           traverseBeam(
-            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx + 1 },
+            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx },
             grid,
             "v",
             trackerGrid,
@@ -195,13 +199,13 @@ function traverseBeam(
         }
         if (curDir === "<") {
           traverseBeam(
-            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx - 1 },
+            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx },
             grid,
             "^",
             trackerGrid,
           );
           traverseBeam(
-            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx - 1 },
+            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx },
             grid,
             "v",
             trackerGrid,
@@ -210,11 +214,11 @@ function traverseBeam(
         }
         if (curDir === "^") {
           curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
-          continue;
+          continue loop;
         }
         if (curDir === "v") {
           curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
-          continue;
+          continue loop;
         }
         throw Error("invalid direction encountered");
       default:
