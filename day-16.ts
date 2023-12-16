@@ -51,7 +51,7 @@ console.log(visualizedTracker);
       break;
     }
     curElem = grid[curCoord.rowIdx][curCoord.colIdx];
-    console.log({ curElem, curDir, curCoord });
+    // console.log({ curElem, curDir, curCoord });
     trackerGrid[curCoord.rowIdx][curCoord.colIdx] = true;
     switch (true) {
       case curElem === ".":
@@ -76,7 +76,7 @@ console.log(visualizedTracker);
         if (curDir === "^") {
           curCoord = {
             rowIdx: curCoord.rowIdx - 1,
-            colIdx: curCoord.colIdx + 1,
+            colIdx: curCoord.colIdx,
           };
           curDir = ">";
           continue loop;
@@ -84,14 +84,14 @@ console.log(visualizedTracker);
         if (curDir === "v") {
           curCoord = {
             rowIdx: curCoord.rowIdx + 1,
-            colIdx: curCoord.colIdx - 1,
+            colIdx: curCoord.colIdx,
           };
           curDir = "<";
           continue loop;
         }
         if (curDir === "<") {
           curCoord = {
-            rowIdx: curCoord.rowIdx + 1,
+            rowIdx: curCoord.rowIdx,
             colIdx: curCoord.colIdx - 1,
           };
           curDir = "v";
@@ -99,7 +99,7 @@ console.log(visualizedTracker);
         }
         if (curDir === ">") {
           curCoord = {
-            rowIdx: curCoord.rowIdx - 1,
+            rowIdx: curCoord.rowIdx,
             colIdx: curCoord.colIdx + 1,
           };
           curDir = "^";
@@ -109,7 +109,7 @@ console.log(visualizedTracker);
       case curElem === "\\":
         if (curDir === "^") {
           curCoord = {
-            rowIdx: curCoord.rowIdx - 1,
+            rowIdx: curCoord.rowIdx,
             colIdx: curCoord.colIdx - 1,
           };
           curDir = "<";
@@ -118,7 +118,7 @@ console.log(visualizedTracker);
         }
         if (curDir === "v") {
           curCoord = {
-            rowIdx: curCoord.rowIdx + 1,
+            rowIdx: curCoord.rowIdx,
             colIdx: curCoord.colIdx + 1,
           };
           curDir = ">";
@@ -127,7 +127,7 @@ console.log(visualizedTracker);
         if (curDir === "<") {
           curCoord = {
             rowIdx: curCoord.rowIdx - 1,
-            colIdx: curCoord.colIdx - 1,
+            colIdx: curCoord.colIdx,
           };
           curDir = "^";
           continue loop;
@@ -135,7 +135,7 @@ console.log(visualizedTracker);
         if (curDir === ">") {
           curCoord = {
             rowIdx: curCoord.rowIdx + 1,
-            colIdx: curCoord.colIdx + 1,
+            colIdx: curCoord.colIdx,
           };
           curDir = "v";
           continue loop;
