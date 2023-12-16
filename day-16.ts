@@ -27,22 +27,32 @@ function toGrid(input: string): Grid {
   return input.split("\n").filter(Boolean).map((l) => l.split("")) as Grid;
 }
 
+function coordToStr(c: Coord) {
+  return `${c.rowIdx}-${c.colIdx}`;
+}
+
 function traverseBeam(
   start: Coord,
   grid: Grid,
   startDir: Dir,
   trackerGrid: TrackerGrid,
+  localVisited: Set<string>,
 ) {
   let curCoord = start;
   let curDir = startDir;
   let curElem;
 
-  console.log("Starting at:");
-  console.log({ start });
   const visualizedTracker = trackerGrid.map((r) =>
-  r.map((v) => v ? "#" : ".").join("")
-).join("\n");
-console.log(visualizedTracker);
+    r.map((v) => v ? "#" : ".").join("")
+  ).join("\n");
+  // console.log(visualizedTracker);
+  console.log({ start });
+
+  if (localVisited.has(coordToStr(start))) {
+    return;
+  }
+
+  localVisited.add(coordToStr(start));
 
   loop:
   while (true) {
@@ -50,9 +60,13 @@ console.log(visualizedTracker);
     if (grid?.[curCoord.rowIdx]?.[curCoord.colIdx] === undefined) {
       break;
     }
+    // if (localVisited.has(coordToStr(curCoord))) {
+    //   break loop;
+    // }
     curElem = grid[curCoord.rowIdx][curCoord.colIdx];
-    console.log({ curElem, curDir, curCoord });
+    // console.log({ curElem, curDir, curCoord });
     trackerGrid[curCoord.rowIdx][curCoord.colIdx] = true;
+
     switch (true) {
       case curElem === ".":
         if (curDir === "^") {
@@ -100,7 +114,7 @@ console.log(visualizedTracker);
         if (curDir === ">") {
           curCoord = {
             rowIdx: curCoord.rowIdx - 1,
-            colIdx: curCoord.colIdx ,
+            colIdx: curCoord.colIdx,
           };
           curDir = "^";
           continue loop;
@@ -148,12 +162,14 @@ console.log(visualizedTracker);
             grid,
             "<",
             trackerGrid,
+            localVisited,
           );
           traverseBeam(
             { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 },
             grid,
             ">",
             trackerGrid,
+            localVisited,
           );
           break loop;
         }
@@ -163,12 +179,14 @@ console.log(visualizedTracker);
             grid,
             "<",
             trackerGrid,
+            localVisited,
           );
           traverseBeam(
             { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 },
             grid,
             ">",
             trackerGrid,
+            localVisited,
           );
           break loop;
         }
@@ -188,12 +206,14 @@ console.log(visualizedTracker);
             grid,
             "^",
             trackerGrid,
+            localVisited,
           );
           traverseBeam(
             { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx },
             grid,
             "v",
             trackerGrid,
+            localVisited,
           );
           break loop;
         }
@@ -203,12 +223,14 @@ console.log(visualizedTracker);
             grid,
             "^",
             trackerGrid,
+            localVisited,
           );
           traverseBeam(
             { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx },
             grid,
             "v",
             trackerGrid,
+            localVisited,
           );
           break loop;
         }
@@ -231,7 +253,13 @@ function pt1(input: string) {
   const grid = toGrid(input);
   const trackerGrid = grid.map((r) => r.map((_) => null));
   // console.log({ trackerGrid });
-  traverseBeam({ rowIdx: 0, colIdx: 0 }, grid, ">", trackerGrid);
+  traverseBeam(
+    { rowIdx: 0, colIdx: 0 },
+    grid,
+    ">",
+    trackerGrid,
+    new Set<string>(),
+  );
   const visualizedTracker = trackerGrid.map((r) =>
     r.map((v) => v ? "#" : ".").join("")
   ).join("\n");
