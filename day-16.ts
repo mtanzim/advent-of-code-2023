@@ -43,23 +43,26 @@ function traverseBeam(
   let curElem;
 
   if (cycleTracker.has(coordToStr(start))) {
+    console.log({ start });
     return;
   }
 
   cycleTracker.add(coordToStr(start));
 
+  let started = false;
   loop:
   while (true) {
-    // went out of bounds
     if (grid?.[curCoord.rowIdx]?.[curCoord.colIdx] === undefined) {
       break;
     }
-    // if (localVisited.has(coordToStr(curCoord))) {
-    //   break loop;
-    // }
     curElem = grid[curCoord.rowIdx][curCoord.colIdx];
-    // console.log({ curElem, curDir, curCoord });
+    // console.log({ curElem });
     trackerGrid[curCoord.rowIdx][curCoord.colIdx] = true;
+    if (coordToStr(curCoord) === coordToStr(start) && started) {
+      console.log({ curCoord });
+      break loop;
+    }
+    started = true;
 
     switch (true) {
       case curElem === ".":
@@ -246,7 +249,6 @@ function traverseBeam(
 function pt1(input: string) {
   const grid = toGrid(input);
   const trackerGrid = grid.map((r) => r.map((_) => null));
-  // console.log({ trackerGrid });
   traverseBeam(
     { rowIdx: 0, colIdx: 0 },
     grid,
@@ -264,3 +266,4 @@ function pt1(input: string) {
 }
 
 console.log(pt1(exampleInput));
+console.log(pt1(Deno.readTextFileSync("inputs/day-16.txt")));
