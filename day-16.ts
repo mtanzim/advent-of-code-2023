@@ -1,15 +1,15 @@
 console.log("day 16");
 
 const exampleInput = `
-.|...\....
-|.-.\.....
+.|...\\....
+|.-.\\.....
 .....|-...
 ........|.
 ..........
-.........\
-..../.\\..
+.........\\
+..../.\\\\..
 .-.-/..|..
-.|....-|.\
+.|....-|.\\
 ..//.|....
 `;
 
@@ -20,7 +20,7 @@ type Dir = "^" | "v" | "<" | ">";
 
 type Element = Mirrors | EmptySpace | Splitters;
 type Grid = Element[][];
-type TrackerGrid = Element[][];
+type TrackerGrid = (boolean | null)[][];
 type Coord = { rowIdx: number; colIdx: number };
 
 function toGrid(input: string): Grid {
@@ -31,98 +31,142 @@ function traverseBeam(
   start: Coord,
   grid: Grid,
   startDir: Dir,
-  trackerGrid: boolean[][],
+  trackerGrid: TrackerGrid,
 ) {
   let curCoord = start;
   let curDir = startDir;
   let curElem;
+
+  console.log("Starting at:");
+  console.log({ start });
+
+  loop:
   while (true) {
     // went out of bounds
     if (grid?.[curCoord.rowIdx]?.[curCoord.colIdx] === undefined) {
       break;
     }
     curElem = grid[curCoord.rowIdx][curCoord.colIdx];
-    console.log({ curElem, curDir });
+    console.log({ curElem, curDir, curCoord });
     trackerGrid[curCoord.rowIdx][curCoord.colIdx] = true;
     switch (true) {
       case curElem === ".":
         if (curDir === "^") {
-          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 };
-          continue;
-        }
-        if (curDir === "v") {
-          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 };
-          continue;
-        }
-        if (curDir === "<") {
           curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
           continue;
         }
-        if (curDir === ">") {
+        if (curDir === "v") {
           curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
+          continue;
+        }
+        if (curDir === "<") {
+          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 };
+          continue;
+        }
+        if (curDir === ">") {
+          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 };
           continue;
         }
         throw Error("invalid direction encountered");
       case curElem === "/":
         if (curDir === "^") {
-          curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
+          curCoord = {
+            rowIdx: curCoord.rowIdx - 1,
+            colIdx: curCoord.colIdx + 1,
+          };
           curDir = ">";
           continue;
         }
         if (curDir === "v") {
-          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 };
+          curCoord = {
+            rowIdx: curCoord.rowIdx + 1,
+            colIdx: curCoord.colIdx - 1,
+          };
           curDir = "<";
           continue;
         }
         if (curDir === "<") {
-          curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
+          curCoord = {
+            rowIdx: curCoord.rowIdx + 1,
+            colIdx: curCoord.colIdx - 1,
+          };
           curDir = "v";
           continue;
         }
         if (curDir === ">") {
-          curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
+          curCoord = {
+            rowIdx: curCoord.rowIdx - 1,
+            colIdx: curCoord.colIdx + 1,
+          };
           curDir = "^";
           continue;
         }
         throw Error("invalid direction encountered");
       case curElem === "\\":
         if (curDir === "^") {
-          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 };
+          curCoord = {
+            rowIdx: curCoord.rowIdx - 1,
+            colIdx: curCoord.colIdx - 1,
+          };
           curDir = "<";
 
           continue;
         }
         if (curDir === "v") {
-          curCoord = { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 };
+          curCoord = {
+            rowIdx: curCoord.rowIdx + 1,
+            colIdx: curCoord.colIdx + 1,
+          };
           curDir = ">";
           continue;
         }
         if (curDir === "<") {
-          curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
+          curCoord = {
+            rowIdx: curCoord.rowIdx - 1,
+            colIdx: curCoord.colIdx - 1,
+          };
           curDir = "^";
           continue;
         }
         if (curDir === ">") {
-          curCoord = { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx };
+          curCoord = {
+            rowIdx: curCoord.rowIdx + 1,
+            colIdx: curCoord.colIdx + 1,
+          };
           curDir = "v";
           continue;
         }
         throw Error("invalid direction encountered");
       case curElem === "-":
-        if (curDir === "^" || curDir === "v") {
+        if (curDir === "^") {
           traverseBeam(
-            { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx - 1 },
+            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx - 1 },
             grid,
             "<",
             trackerGrid,
           );
           traverseBeam(
-            { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 },
+            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx + 1 },
             grid,
             ">",
             trackerGrid,
           );
-          break;
+          break loop;
+        }
+        if (curDir === "v") {
+          traverseBeam(
+            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx - 1 },
+            grid,
+            "<",
+            trackerGrid,
+          );
+          traverseBeam(
+            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx + 1 },
+            grid,
+            ">",
+            trackerGrid,
+          );
+          break loop;
         }
         if (curDir === "<") {
           curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
@@ -134,23 +178,38 @@ function traverseBeam(
         }
         throw Error("invalid direction encountered");
       case curElem === "|":
-        if (curDir === ">" || curDir === "<") {
+        if (curDir === ">") {
           traverseBeam(
-            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx },
+            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx + 1 },
             grid,
             "^",
             trackerGrid,
           );
           traverseBeam(
-            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx },
+            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx + 1 },
             grid,
             "v",
             trackerGrid,
           );
-          break;
+          break loop;
+        }
+        if (curDir === "<") {
+          traverseBeam(
+            { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx - 1 },
+            grid,
+            "^",
+            trackerGrid,
+          );
+          traverseBeam(
+            { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx - 1 },
+            grid,
+            "v",
+            trackerGrid,
+          );
+          break loop;
         }
         if (curDir === "^") {
-          curCoord = { rowIdx: curCoord.rowIdx  - 1, colIdx: curCoord.colIdx };
+          curCoord = { rowIdx: curCoord.rowIdx - 1, colIdx: curCoord.colIdx };
           continue;
         }
         if (curDir === "v") {
@@ -166,14 +225,13 @@ function traverseBeam(
 
 function pt1(input: string) {
   const grid = toGrid(input);
-  const trackerGrid = grid.map((r) => r.map((_) => false));
+  const trackerGrid = grid.map((r) => r.map((_) => null));
   // console.log({ trackerGrid });
   traverseBeam({ rowIdx: 0, colIdx: 0 }, grid, ">", trackerGrid);
   const visualizedTracker = trackerGrid.map((r) =>
     r.map((v) => v ? "#" : ".").join("")
   ).join("\n");
-  // console.log(trackerGrid);
-  // console.log(visualizedTracker);
+  console.log(visualizedTracker);
 }
 
 pt1(exampleInput);
