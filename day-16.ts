@@ -36,23 +36,17 @@ function traverseBeam(
   grid: Grid,
   startDir: Dir,
   trackerGrid: TrackerGrid,
-  localVisited: Set<string>,
+  cycleTracker: Set<string>,
 ) {
   let curCoord = start;
   let curDir = startDir;
   let curElem;
 
-  const visualizedTracker = trackerGrid.map((r) =>
-    r.map((v) => v ? "#" : ".").join("")
-  ).join("\n");
-  // console.log(visualizedTracker);
-  console.log({ start });
-
-  if (localVisited.has(coordToStr(start))) {
+  if (cycleTracker.has(coordToStr(start))) {
     return;
   }
 
-  localVisited.add(coordToStr(start));
+  cycleTracker.add(coordToStr(start));
 
   loop:
   while (true) {
@@ -162,14 +156,14 @@ function traverseBeam(
             grid,
             "<",
             trackerGrid,
-            localVisited,
+            cycleTracker,
           );
           traverseBeam(
             { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 },
             grid,
             ">",
             trackerGrid,
-            localVisited,
+            cycleTracker,
           );
           break loop;
         }
@@ -179,14 +173,14 @@ function traverseBeam(
             grid,
             "<",
             trackerGrid,
-            localVisited,
+            cycleTracker,
           );
           traverseBeam(
             { rowIdx: curCoord.rowIdx, colIdx: curCoord.colIdx + 1 },
             grid,
             ">",
             trackerGrid,
-            localVisited,
+            cycleTracker,
           );
           break loop;
         }
@@ -206,14 +200,14 @@ function traverseBeam(
             grid,
             "^",
             trackerGrid,
-            localVisited,
+            cycleTracker,
           );
           traverseBeam(
             { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx },
             grid,
             "v",
             trackerGrid,
-            localVisited,
+            cycleTracker,
           );
           break loop;
         }
@@ -223,14 +217,14 @@ function traverseBeam(
             grid,
             "^",
             trackerGrid,
-            localVisited,
+            cycleTracker,
           );
           traverseBeam(
             { rowIdx: curCoord.rowIdx + 1, colIdx: curCoord.colIdx },
             grid,
             "v",
             trackerGrid,
-            localVisited,
+            cycleTracker,
           );
           break loop;
         }
@@ -264,6 +258,9 @@ function pt1(input: string) {
     r.map((v) => v ? "#" : ".").join("")
   ).join("\n");
   console.log(visualizedTracker);
+  return trackerGrid.reduce((acc, row) => {
+    return acc + row.reduce((colAcc, v) => v ? colAcc + 1 : colAcc, 0);
+  }, 0);
 }
 
-pt1(exampleInput);
+console.log(pt1(exampleInput));
