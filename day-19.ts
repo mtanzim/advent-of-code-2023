@@ -97,7 +97,7 @@ function pt1({ workflows, parts }: Game): number {
     let rule;
     while (true) {
       rule = workflows[curFlowName][ruleIdx];
-      console.log({ p, curFlowName, ruleIdx });
+      // console.log({ p, curFlowName, ruleIdx });
 
       if (rule.type === "final") {
         if (rule.nextWorkflow === ACCEPTED) {
@@ -140,4 +140,5 @@ function pt1({ workflows, parts }: Game): number {
 }
 
 console.log(pt1(parse(exampleInput)));
+console.log(pt1(parse(Deno.readTextFileSync("inputs/day-19.txt"))));
 // parse(Deno.readTextFileSync("inputs/day-19.txt"));
