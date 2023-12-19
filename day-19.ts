@@ -36,11 +36,12 @@ type FinalRule = Pick<FirstRules, "nextWorkflow"> & { type: "final" };
 type Rule = FirstRules | FinalRule;
 
 type Workflows = Record<string, Rule[]>;
+type Game = { workflows: Workflows; parts: Part[] };
 
 const ACCEPTED = "A";
 const REJECTED = "R";
 
-function parse(input: string): [Workflows, Part[]] {
+function parse(input: string): Game {
   const [workflowsTxt, partsTxt] = input.split("\n\n");
   // console.log({ workflowsTxt, partsTxt });
   const parts: Part[] = partsTxt.split("\n").map((line) => {
@@ -50,7 +51,7 @@ function parse(input: string): [Workflows, Part[]] {
       const [label, val] = t.split("=");
       return {
         ...acc,
-        [label]: val,
+        [label]: Number(val),
       };
     }, {} as Part);
   });
@@ -83,8 +84,60 @@ function parse(input: string): [Workflows, Part[]] {
       return [label, allRulesParsed];
     }),
   );
-  console.log({ workflows, parts });
-  return [workflows, parts];
+  // console.log({ workflows, parts });
+  return { workflows, parts };
 }
 
-parse(exampleInput);
+const START_FLOW = "in";
+// answer 19114
+function pt1({ workflows, parts }: Game): number {
+  const filteredParts: Part[] = parts.filter((p) => {
+    let curFlowName = START_FLOW;
+    let ruleIdx = 0;
+    let rule;
+    while (true) {
+      rule = workflows[curFlowName][ruleIdx];
+      console.log({ p, curFlowName, ruleIdx });
+
+      if (rule.type === "final") {
+        if (rule.nextWorkflow === ACCEPTED) {
+          return true;
+        }
+        if (rule.nextWorkflow === REJECTED) {
+          return false;
+        }
+        ruleIdx = 0;
+        curFlowName = rule.nextWorkflow;
+        continue;
+      }
+      if (rule.type === "first") {
+        const b = rule.op === "<"
+          ? p[rule.label as keyof Part] < rule.val
+          : p[rule.label as keyof Part] > rule.val;
+        if (b) {
+          if (rule.nextWorkflow === ACCEPTED) {
+            return true;
+          }
+          if (rule.nextWorkflow === REJECTED) {
+            return false;
+          }
+          ruleIdx = 0;
+          curFlowName = rule.nextWorkflow;
+          continue;
+        } else {
+          ruleIdx++;
+        }
+        continue;
+      }
+      throw Error("should not be here");
+    }
+  });
+  // console.log({ filteredParts });
+  return filteredParts.reduce((acc, p) => {
+    const { x, m, a, s } = p;
+    return acc + x + m + a + s;
+  }, 0);
+}
+
+console.log(pt1(parse(exampleInput)));
+// parse(Deno.readTextFileSync("inputs/day-19.txt"));
