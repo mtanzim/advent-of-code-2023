@@ -27,11 +27,12 @@ type Part = {
 
 type FirstRules = {
   label: string;
-  op: string;
+  op: "<" | ">";
   val: number;
   nextWorkflow: string;
+  type: "first";
 };
-type FinalRule = Pick<FirstRules, "nextWorkflow">;
+type FinalRule = Pick<FirstRules, "nextWorkflow"> & { type: "final" };
 type Rule = FirstRules | FinalRule;
 
 type Workflows = Record<string, Rule[]>;
@@ -42,7 +43,7 @@ const REJECTED = "R";
 function parse(input: string): [Workflows, Part[]] {
   const [workflowsTxt, partsTxt] = input.split("\n\n");
   // console.log({ workflowsTxt, partsTxt });
-  const parts = partsTxt.split("\n").map((line) => {
+  const parts: Part[] = partsTxt.split("\n").map((line) => {
     // console.log(line);
     const tokens = line.replace("}", "").replace("{", "").split(",");
     return tokens.reduce((acc, t) => {
@@ -51,20 +52,39 @@ function parse(input: string): [Workflows, Part[]] {
         ...acc,
         [label]: val,
       };
-    }, {});
+    }, {} as Part);
   });
-  console.log({ parts });
-  const workflows = workflowsTxt.split("\n").map((line) => {
-    console.log(line);
-    const [label, rulesTxt] = line.split("{");
-    const rules = rulesTxt.replace("}", "").split(",");
-    const finalRule = rules.at(-1);
-    if (!finalRule) {
-      throw Error("cannot get final rule");
-    }
-    const firstRules = rules.slice(0, -1);
-    console.log({ rules, finalRule, firstRules });
-  });
+  const workflows = Object.fromEntries(
+    workflowsTxt.split("\n").map((line) => {
+      // console.log(line);
+      const [label, rulesTxt] = line.split("{");
+      const rules = rulesTxt.replace("}", "").split(",");
+      const finalRule = rules.at(-1);
+      if (!finalRule) {
+        throw Error("cannot get final rule");
+      }
+      const firstRules = rules.slice(0, -1);
+      // console.log({ rules, finalRule, firstRules });
+      const firstRulesParsed: FirstRules[] = firstRules.map((rule) => {
+        const [firstTokens, nextWorkflow] = rule.split(":");
+        const [label, val] = firstTokens.split(/<|>/);
+        const op = firstTokens.includes("<") ? "<" : ">";
+        const valParsed = Number(val);
+        if (isNaN(valParsed)) {
+          throw Error("cannot parse value in rule");
+        }
+        return { label, op, val: valParsed, nextWorkflow, type: "first" };
+      });
+      const finalRuleParsed: FinalRule = {
+        nextWorkflow: finalRule,
+        type: "final",
+      };
+      const allRulesParsed: Rule[] = [...firstRulesParsed, finalRuleParsed];
+      return [label, allRulesParsed];
+    }),
+  );
+  console.log({ workflows, parts });
+  return [workflows, parts];
 }
 
 parse(exampleInput);
