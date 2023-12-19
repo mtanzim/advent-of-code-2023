@@ -91,12 +91,15 @@ function parse(input: string): Game {
 const START_FLOW = "in";
 // answer 19114
 function pt1({ workflows, parts }: Game): number {
-  const filteredParts: Part[] = parts.filter((p) => {
+  const filteredParts: Part[] = parts.filter((p, partIdx) => {
+    console.log("");
     let curFlowName = START_FLOW;
     let ruleIdx = 0;
     let rule;
     while (true) {
       rule = workflows[curFlowName][ruleIdx];
+      // console.clear();
+      console.log({ partIdx, curFlowName, ruleIdx });
       // console.log({ p, curFlowName, ruleIdx });
 
       if (rule.type === "final") {
