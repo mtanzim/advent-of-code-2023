@@ -25,12 +25,14 @@ type Part = {
   s: number;
 };
 
-type Rule = {
+type FirstRules = {
   label: string;
   op: string;
   val: number;
   nextWorkflow: string;
 };
+type FinalRule = Pick<FirstRules, "nextWorkflow">;
+type Rule = FirstRules | FinalRule;
 
 type Workflows = Record<string, Rule[]>;
 
@@ -39,7 +41,7 @@ const REJECTED = "R";
 
 function parse(input: string): [Workflows, Part[]] {
   const [workflowsTxt, partsTxt] = input.split("\n\n");
-  console.log({ workflowsTxt, partsTxt });
+  // console.log({ workflowsTxt, partsTxt });
   const parts = partsTxt.split("\n").map((line) => {
     // console.log(line);
     const tokens = line.replace("}", "").replace("{", "").split(",");
@@ -51,7 +53,18 @@ function parse(input: string): [Workflows, Part[]] {
       };
     }, {});
   });
-  console.log(parts)
+  console.log({ parts });
+  const workflows = workflowsTxt.split("\n").map((line) => {
+    console.log(line);
+    const [label, rulesTxt] = line.split("{");
+    const rules = rulesTxt.replace("}", "").split(",");
+    const finalRule = rules.at(-1);
+    if (!finalRule) {
+      throw Error("cannot get final rule");
+    }
+    const firstRules = rules.slice(0, -1);
+    console.log({ rules, finalRule, firstRules });
+  });
 }
 
 parse(exampleInput);
