@@ -55,7 +55,7 @@ class ConjunctionModule implements GameModule {
   }
   rx(senderName: string, pulse: Pulse) {
     this.state[senderName] = pulse;
-    this.tx(!Object.values(this.state).every((s) => s));
+    this.tx(Object.values(this.state).every((s) => s));
   }
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
