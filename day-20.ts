@@ -8,13 +8,14 @@ const CONJUNCTION = "&";
 const BROADCASTER = "broadcaster";
 
 type TrackerCb = (pulse: Pulse) => void;
+type RxCB = (senderName: string, pulse: Pulse) => void;
 
 interface GameModule {
   name: string;
   trackerCb: TrackerCb;
   addConnection: (m: GameModule) => void;
-  rx: (senderName: string, pulse: Pulse) => void;
-  tx: (pulse: Pulse) => void;
+  rx: RxCB;
+  tx: (pulse: Pulse) => RxCB[];
 }
 
 class FlipFlopModule implements GameModule {
@@ -34,15 +35,18 @@ class FlipFlopModule implements GameModule {
     this.trackerCb(pulse);
     if (pulse) {
       // nothing
+      return [];
     } else {
       this.state = !this.state;
-      this.tx(this.state);
+      return this.tx(this.state);
     }
   }
-  tx(pulse: Pulse) {
-    this.connections.forEach((c) => {
-      console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
-      c.rx(this.name, pulse);
+  tx(pulse: Pulse): RxCB[] {
+    return this.connections.map((c) => {
+      return () => {
+        console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
+        return c.rx(this.name, pulse);
+      };
     });
   }
 }
@@ -53,10 +57,11 @@ class ConjunctionModule implements GameModule {
   private connections: GameModule[] = [];
   state: Record<string, boolean> = {};
   trackerCb: TrackerCb;
-
+  queue: any[];
   constructor(name: string, trackerCb: TrackerCb) {
     this.name = name;
     this.trackerCb = trackerCb;
+    this.queue = [];
   }
   addConnection(m: GameModule) {
     this.connections.push(m);
@@ -64,13 +69,14 @@ class ConjunctionModule implements GameModule {
   rx(senderName: string, pulse: Pulse) {
     this.trackerCb(pulse);
     this.state[senderName] = pulse;
-    // console.log({ state: this.state });
-    this.tx(!Object.values(this.state).every((s) => s));
+    return this.tx(!Object.values(this.state).every((s) => s));
   }
-  tx(pulse: Pulse) {
-    this.connections.forEach((c) => {
-      console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
-      c.rx(this.name, pulse);
+  tx(pulse: Pulse): RxCB[] {
+    return this.connections.map((c) => {
+      return () => {
+        console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
+        return c.rx(this.name, pulse);
+      };
     });
   }
 }
@@ -80,21 +86,25 @@ class BroadcasterModule implements GameModule {
   name: string = BROADCASTER;
   private connections: GameModule[] = [];
   trackerCb: TrackerCb;
+  queue: any[];
 
   constructor(trackerCb: TrackerCb) {
     this.trackerCb = trackerCb;
+    this.queue = [];
   }
   addConnection(m: GameModule) {
     this.connections.push(m);
   }
   rx(_: string, pulse: Pulse) {
     this.trackerCb(pulse);
-    this.tx(pulse);
+    return this.tx(pulse);
   }
-  tx(pulse: Pulse) {
-    this.connections.forEach((c) => {
-      console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
-      c.rx(this.name, pulse);
+  tx(pulse: Pulse): RxCB[] {
+    return this.connections.map((c) => {
+      return () => {
+        console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
+        return c.rx(this.name, pulse);
+      };
     });
   }
 }
@@ -111,8 +121,10 @@ class OutputModule implements GameModule {
   }
   rx(_: string, pulse: Pulse) {
     this.trackerCb(pulse);
+    return this.tx(pulse);
   }
   tx(_pulse: Pulse) {
+    return [];
   }
 }
 
@@ -168,41 +180,22 @@ function example2() {
   inv.addConnection(b);
   b.addConnection(con);
   con.addConnection(output);
-  for (let i = 0; i < 1000; i++) {
-    broadcaster.rx("button module", false);
+  // for (let i = 0; i < 1000; i++) {
+  //   broadcaster.rx("button module", false);
+  // }
+  // console.log({ tracker });
+
+  for (let i = 0; i < 1; i++) {
+    console.log(`\npressing - ${i + 1}\n`);
+
+    console.log("button -low-> broadcaster");
+
+    let queue = broadcaster.rx("button module", false);
+    while (queue.length !== 0) {
+      const fn = queue.shift();
+      queue.push(...fn());
+    }
   }
-  console.log({ tracker });
-
-  // broadcaster.rx("button module", false);
-
-  // console.log("\nstates\n");
-  // [a, b].forEach((m) => {
-  //   console.log(m.name);
-  //   console.log(m.state);
-  // });
-
-  // broadcaster.rx("button module", false);
-
-  // console.log("\nstates\n");
-  // [a, b].forEach((m) => {
-  //   console.log(m.name);
-  //   console.log(m.state);
-  // });
-
-  // broadcaster.rx("button module", false);
-
-  // console.log("\nstates\n");
-  // [a, b].forEach((m) => {
-  //   console.log(m.name);
-  //   console.log(m.state);
-  // });
-
-  // broadcaster.rx("button module", false);
-  // console.log("\nstates - 4\n");
-  // [a, b].forEach((m) => {
-  //   console.log(m.name);
-  //   console.log(m.state);
-  // });
 }
-example1();
-// example2();
+// example1();
+example2();
