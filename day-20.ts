@@ -54,7 +54,7 @@ class ConjunctionModule implements GameModule {
   }
   rx(senderName: string, pulse: Pulse) {
     this.state[senderName] = pulse;
-    console.log({ state: this.state });
+    // console.log({ state: this.state });
     this.tx(!Object.values(this.state).every((s) => s));
   }
   tx(pulse: Pulse) {
@@ -85,6 +85,20 @@ class BroadcasterModule implements GameModule {
   }
 }
 
+class OutputModule implements GameModule {
+  name: string = "output";
+  private connections: GameModule[] = [];
+  constructor() {
+  }
+  addConnection(m: GameModule) {
+    this.connections.push(m);
+  }
+  rx(_: string, _pulse: Pulse) {
+  }
+  tx(_pulse: Pulse) {
+  }
+}
+
 function example1() {
   const broadcaster = new BroadcasterModule();
   const a = new FlipFlopModule("a");
@@ -107,4 +121,51 @@ function example1() {
     console.log(m.state);
   });
 }
-example1();
+
+function example2() {
+  const broadcaster = new BroadcasterModule();
+  const a = new FlipFlopModule("a");
+  const b = new FlipFlopModule("b");
+  const inv = new ConjunctionModule("inv");
+  const con = new ConjunctionModule("con");
+  const output = new OutputModule();
+  broadcaster.addConnection(a);
+  a.addConnection(inv);
+  a.addConnection(con);
+  inv.addConnection(b);
+  b.addConnection(con);
+  con.addConnection(output);
+
+  broadcaster.rx("button module", false);
+
+  console.log("\nstates\n");
+  [a, b].forEach((m) => {
+    console.log(m.name);
+    console.log(m.state);
+  });
+
+  broadcaster.rx("button module", false);
+
+  console.log("\nstates\n");
+  [a, b].forEach((m) => {
+    console.log(m.name);
+    console.log(m.state);
+  });
+
+  broadcaster.rx("button module", false);
+
+  console.log("\nstates\n");
+  [a, b].forEach((m) => {
+    console.log(m.name);
+    console.log(m.state);
+  });
+
+  broadcaster.rx("button module", false);
+  console.log("\nstates - 4\n");
+  [a, b].forEach((m) => {
+    console.log(m.name);
+    console.log(m.state);
+  });
+}
+// example1();
+example2();
