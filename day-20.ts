@@ -15,7 +15,7 @@ interface GameModule {
 }
 
 class FlipFlopModule implements GameModule {
-  private state: State = false;
+  state: State = false;
   private prefix: string = FLIP_FLOP;
   name: string;
   private connections: GameModule[] = [];
@@ -36,7 +36,7 @@ class FlipFlopModule implements GameModule {
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
       console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
-      c.rx(this.name, pulse)
+      c.rx(this.name, pulse);
     });
   }
 }
@@ -45,17 +45,17 @@ class ConjunctionModule implements GameModule {
   private prefix: string = CONJUNCTION;
   name: string;
   private connections: GameModule[] = [];
-  private state: Record<string, boolean> = {};
+  state: Record<string, boolean> = {};
   constructor(name: string) {
     this.name = name;
   }
   addConnection(m: GameModule) {
     this.connections.push(m);
-    this.state[m.name] = false;
   }
   rx(senderName: string, pulse: Pulse) {
     this.state[senderName] = pulse;
-    this.tx(Object.values(this.state).every((s) => s));
+    console.log({ state: this.state });
+    this.tx(!Object.values(this.state).every((s) => s));
   }
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
@@ -100,5 +100,11 @@ function example1() {
   inv.addConnection(a);
 
   broadcaster.rx("button module", false);
+
+  console.log("\nstates\n");
+  [a, b, c].forEach((m) => {
+    console.log(m.name);
+    console.log(m.state);
+  });
 }
 example1();
