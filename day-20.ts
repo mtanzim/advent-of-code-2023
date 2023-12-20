@@ -7,8 +7,11 @@ const FLIP_FLOP = "%";
 const CONJUNCTION = "&";
 const BROADCASTER = "broadcaster";
 
+type TrackerCb = (pulse: Pulse) => void;
+
 interface GameModule {
   name: string;
+  trackerCb: TrackerCb;
   addConnection: (m: GameModule) => void;
   rx: (senderName: string, pulse: Pulse) => void;
   tx: (pulse: Pulse) => void;
@@ -19,8 +22,10 @@ class FlipFlopModule implements GameModule {
   private prefix: string = FLIP_FLOP;
   name: string;
   private connections: GameModule[] = [];
-  constructor(name: string) {
+  trackerCb: TrackerCb;
+  constructor(name: string, trackerCb: TrackerCb) {
     this.name = name;
+    this.trackerCb = trackerCb;
   }
   addConnection(m: GameModule) {
     this.connections.push(m);
@@ -36,6 +41,7 @@ class FlipFlopModule implements GameModule {
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
       console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
+      this.trackerCb(pulse);
       c.rx(this.name, pulse);
     });
   }
@@ -46,8 +52,11 @@ class ConjunctionModule implements GameModule {
   name: string;
   private connections: GameModule[] = [];
   state: Record<string, boolean> = {};
-  constructor(name: string) {
+  trackerCb: TrackerCb;
+
+  constructor(name: string, trackerCb: TrackerCb) {
     this.name = name;
+    this.trackerCb = trackerCb;
   }
   addConnection(m: GameModule) {
     this.connections.push(m);
@@ -60,6 +69,7 @@ class ConjunctionModule implements GameModule {
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
       console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
+      this.trackerCb(pulse);
       c.rx(this.name, pulse);
     });
   }
@@ -69,7 +79,10 @@ class BroadcasterModule implements GameModule {
   private prefix: string = BROADCASTER;
   name: string = BROADCASTER;
   private connections: GameModule[] = [];
-  constructor() {
+  trackerCb: TrackerCb;
+
+  constructor(trackerCb: TrackerCb) {
+    this.trackerCb = trackerCb;
   }
   addConnection(m: GameModule) {
     this.connections.push(m);
@@ -80,15 +93,18 @@ class BroadcasterModule implements GameModule {
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
       console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
+      this.trackerCb(pulse);
       c.rx(this.name, pulse);
     });
   }
 }
 
 class OutputModule implements GameModule {
-  name: string = "output";
+  name = "output";
   private connections: GameModule[] = [];
-  constructor() {
+  trackerCb: TrackerCb;
+  constructor(trackerCb: TrackerCb) {
+    this.trackerCb = trackerCb;
   }
   addConnection(m: GameModule) {
     this.connections.push(m);
@@ -100,11 +116,18 @@ class OutputModule implements GameModule {
 }
 
 function example1() {
-  const broadcaster = new BroadcasterModule();
-  const a = new FlipFlopModule("a");
-  const b = new FlipFlopModule("b");
-  const c = new FlipFlopModule("c");
-  const inv = new ConjunctionModule("inv");
+  const tracker: Record<string, number> = {
+    "true": 0,
+    "false": 0,
+  };
+  const trackerCb = (pulse: Pulse) => {
+    tracker[String(pulse)]++;
+  };
+  const broadcaster = new BroadcasterModule(trackerCb);
+  const a = new FlipFlopModule("a", trackerCb);
+  const b = new FlipFlopModule("b", trackerCb);
+  const c = new FlipFlopModule("c", trackerCb);
+  const inv = new ConjunctionModule("inv", trackerCb);
   broadcaster.addConnection(a);
   broadcaster.addConnection(b);
   broadcaster.addConnection(c);
@@ -113,13 +136,16 @@ function example1() {
   c.addConnection(inv);
   inv.addConnection(a);
 
-  broadcaster.rx("button module", false);
-
-  console.log("\nstates\n");
-  [a, b, c].forEach((m) => {
-    console.log(m.name);
-    console.log(m.state);
-  });
+  for (let i = 0; i < 1000; i++) {
+    trackerCb(false);
+    broadcaster.rx("button module", false);
+    // console.log("\nstates\n");
+    // [a, b, c].forEach((m) => {
+    //   console.log(m.name);
+    //   console.log(m.state);
+    // });
+  }
+  console.log({ tracker });
 }
 
 function example2() {
@@ -167,5 +193,5 @@ function example2() {
     console.log(m.state);
   });
 }
-// example1();
-example2();
+example1();
+// example2();
