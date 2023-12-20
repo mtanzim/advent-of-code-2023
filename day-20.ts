@@ -31,6 +31,7 @@ class FlipFlopModule implements GameModule {
     this.connections.push(m);
   }
   rx(_: string, pulse: Pulse) {
+    this.trackerCb(pulse);
     if (pulse) {
       // nothing
     } else {
@@ -41,7 +42,6 @@ class FlipFlopModule implements GameModule {
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
       console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
-      this.trackerCb(pulse);
       c.rx(this.name, pulse);
     });
   }
@@ -62,6 +62,7 @@ class ConjunctionModule implements GameModule {
     this.connections.push(m);
   }
   rx(senderName: string, pulse: Pulse) {
+    this.trackerCb(pulse);
     this.state[senderName] = pulse;
     // console.log({ state: this.state });
     this.tx(!Object.values(this.state).every((s) => s));
@@ -69,7 +70,6 @@ class ConjunctionModule implements GameModule {
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
       console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
-      this.trackerCb(pulse);
       c.rx(this.name, pulse);
     });
   }
@@ -88,12 +88,12 @@ class BroadcasterModule implements GameModule {
     this.connections.push(m);
   }
   rx(_: string, pulse: Pulse) {
+    this.trackerCb(pulse);
     this.tx(pulse);
   }
   tx(pulse: Pulse) {
     this.connections.forEach((c) => {
       console.log(`${this.name} -${pulse ? "high" : "low"} -> ${c.name}`);
-      this.trackerCb(pulse);
       c.rx(this.name, pulse);
     });
   }
@@ -109,7 +109,8 @@ class OutputModule implements GameModule {
   addConnection(m: GameModule) {
     this.connections.push(m);
   }
-  rx(_: string, _pulse: Pulse) {
+  rx(_: string, pulse: Pulse) {
+    this.trackerCb(pulse);
   }
   tx(_pulse: Pulse) {
   }
@@ -137,7 +138,6 @@ function example1() {
   inv.addConnection(a);
 
   for (let i = 0; i < 1000; i++) {
-    trackerCb(false);
     broadcaster.rx("button module", false);
     // console.log("\nstates\n");
     // [a, b, c].forEach((m) => {
@@ -149,49 +149,60 @@ function example1() {
 }
 
 function example2() {
-  const broadcaster = new BroadcasterModule();
-  const a = new FlipFlopModule("a");
-  const b = new FlipFlopModule("b");
-  const inv = new ConjunctionModule("inv");
-  const con = new ConjunctionModule("con");
-  const output = new OutputModule();
+  const tracker: Record<string, number> = {
+    "true": 0,
+    "false": 0,
+  };
+  const trackerCb = (pulse: Pulse) => {
+    tracker[String(pulse)]++;
+  };
+  const broadcaster = new BroadcasterModule(trackerCb);
+  const a = new FlipFlopModule("a", trackerCb);
+  const b = new FlipFlopModule("b", trackerCb);
+  const inv = new ConjunctionModule("inv", trackerCb);
+  const con = new ConjunctionModule("con", trackerCb);
+  const output = new OutputModule(trackerCb);
   broadcaster.addConnection(a);
   a.addConnection(inv);
   a.addConnection(con);
   inv.addConnection(b);
   b.addConnection(con);
   con.addConnection(output);
+  for (let i = 0; i < 1000; i++) {
+    broadcaster.rx("button module", false);
+  }
+  console.log({ tracker });
 
-  broadcaster.rx("button module", false);
+  // broadcaster.rx("button module", false);
 
-  console.log("\nstates\n");
-  [a, b].forEach((m) => {
-    console.log(m.name);
-    console.log(m.state);
-  });
+  // console.log("\nstates\n");
+  // [a, b].forEach((m) => {
+  //   console.log(m.name);
+  //   console.log(m.state);
+  // });
 
-  broadcaster.rx("button module", false);
+  // broadcaster.rx("button module", false);
 
-  console.log("\nstates\n");
-  [a, b].forEach((m) => {
-    console.log(m.name);
-    console.log(m.state);
-  });
+  // console.log("\nstates\n");
+  // [a, b].forEach((m) => {
+  //   console.log(m.name);
+  //   console.log(m.state);
+  // });
 
-  broadcaster.rx("button module", false);
+  // broadcaster.rx("button module", false);
 
-  console.log("\nstates\n");
-  [a, b].forEach((m) => {
-    console.log(m.name);
-    console.log(m.state);
-  });
+  // console.log("\nstates\n");
+  // [a, b].forEach((m) => {
+  //   console.log(m.name);
+  //   console.log(m.state);
+  // });
 
-  broadcaster.rx("button module", false);
-  console.log("\nstates - 4\n");
-  [a, b].forEach((m) => {
-    console.log(m.name);
-    console.log(m.state);
-  });
+  // broadcaster.rx("button module", false);
+  // console.log("\nstates - 4\n");
+  // [a, b].forEach((m) => {
+  //   console.log(m.name);
+  //   console.log(m.state);
+  // });
 }
 example1();
 // example2();
