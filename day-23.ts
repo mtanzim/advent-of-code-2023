@@ -70,7 +70,6 @@ const dfs = (
     new Set(),
   ]];
 
-  const distances: number[] = [];
   let max = -1;
 
   while (stack.length > 0) {
@@ -83,7 +82,7 @@ const dfs = (
     const curIndicator = toIndicator(curCoord);
     if (toIndicator(curCoord) === toIndicator(sink)) {
       max = Math.max(curDistance, max);
-      console.log({max})
+      console.log({ max });
       continue;
     }
     if (marked.has(curIndicator)) {
@@ -122,7 +121,7 @@ const dfs = (
       stack.push([n, curDistance + 1, new Set(marked)]);
     });
   }
-  return max
+  return max;
 };
 
 function pt1(grid: Grid): number {
@@ -130,9 +129,76 @@ function pt1(grid: Grid): number {
   return dfs(source, grid, sink);
 }
 
+type AdjList = Map<string, Coord[]>;
+
+function getAdjList(grid: Grid): AdjList {
+  const adjList = new Map();
+  grid.forEach((row, rowIdx) => {
+    row.forEach((_, colIdx) => {
+      const neighbors: Coord[] = [
+        { rowIdx: rowIdx, colIdx: colIdx + 1 },
+        { rowIdx: rowIdx, colIdx: colIdx - 1 },
+        { rowIdx: rowIdx + 1, colIdx: colIdx },
+        { rowIdx: rowIdx - 1, colIdx: colIdx },
+      ]
+        .filter((c) => grid?.[c.rowIdx]?.[c.colIdx] !== undefined)
+        .filter((nc) => {
+          const nv = grid[nc.rowIdx][nc.colIdx];
+          return [PATH, U, D, L, R].some((d) => d === nv);
+        });
+      adjList.set(toIndicator({ rowIdx, colIdx }), neighbors);
+    });
+  });
+  console.log({ adjList });
+  return adjList;
+}
+
+const dfsAdj = (
+  source: Coord,
+  adjList: AdjList,
+  sink: Coord,
+): number => {
+  const stack: Array<[Coord, number, Set<string>]> = [[
+    source,
+    0,
+    new Set(),
+  ]];
+
+  let max = -1;
+
+  while (stack.length > 0) {
+    const top = stack.pop();
+
+    if (!top) {
+      throw Error("failed to get top of stack");
+    }
+    const [curCoord, curDistance, marked] = top;
+    const curIndicator = toIndicator(curCoord);
+    if (toIndicator(curCoord) === toIndicator(sink)) {
+      max = Math.max(curDistance, max);
+      console.log({ max });
+      continue;
+    }
+    if (marked.has(curIndicator)) {
+      continue;
+    }
+    marked.add(curIndicator);
+
+    const neighbors = adjList.get(toIndicator(curCoord));
+    if (!neighbors) {
+      throw Error("cannot get neighbors");
+    }
+    neighbors.forEach((n) => {
+      stack.push([n, curDistance + 1, new Set(marked)]);
+    });
+  }
+  return max;
+};
+
 function pt2(grid: Grid): number {
   const [sink, source] = [findSink(grid), findSource(grid)];
-  return dfs(source, grid, sink, false);
+  const adjList = getAdjList(grid);
+  return dfsAdj(source, adjList, sink);
 }
 
 // console.log(pt1(toGrid(example)));
