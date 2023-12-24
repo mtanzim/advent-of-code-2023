@@ -71,6 +71,7 @@ const dfs = (
   ]];
 
   const distances: number[] = [];
+  let max = -1;
 
   while (stack.length > 0) {
     const top = stack.pop();
@@ -81,7 +82,8 @@ const dfs = (
     const [curCoord, curDistance, marked] = top;
     const curIndicator = toIndicator(curCoord);
     if (toIndicator(curCoord) === toIndicator(sink)) {
-      distances.push(curDistance);
+      max = Math.max(curDistance, max);
+      console.log({max})
       continue;
     }
     if (marked.has(curIndicator)) {
@@ -120,10 +122,7 @@ const dfs = (
       stack.push([n, curDistance + 1, new Set(marked)]);
     });
   }
-  return distances.reduce(
-    (max, cur) => cur > max ? cur : max,
-    Number.MIN_SAFE_INTEGER,
-  );
+  return max
 };
 
 function pt1(grid: Grid): number {
@@ -136,6 +135,6 @@ function pt2(grid: Grid): number {
   return dfs(source, grid, sink, false);
 }
 
-console.log(pt1(toGrid(example)));
-console.log(pt2(toGrid(example)));
+// console.log(pt1(toGrid(example)));
+// console.log(pt2(toGrid(example)));
 console.log(pt2(toGrid(Deno.readTextFileSync("inputs/day-23.txt"))));
